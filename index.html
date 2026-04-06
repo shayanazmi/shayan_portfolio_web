@@ -159,13 +159,13 @@
             font-size: clamp(3.5rem, 10vw, 8rem); line-height: 0.95; margin-bottom: 3rem;
             letter-spacing: -0.03em;
             background: linear-gradient(180deg, #ffffff 0%, rgba(255,255,255,0.3) 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
             white-space: pre-line; text-indent: -0.05em;
         }
         body.creative-mode .hero-hook {
             font-style: italic;
             background: linear-gradient(180deg, var(--accent) 0%, rgba(229,169,60,0.1) 100%);
-            -webkit-background-clip: text;
+            -webkit-background-clip: text; background-clip: text;
         }
         
         .hero-intro { 
@@ -1082,30 +1082,16 @@
 
     <!-- FOOTER -->
     <footer class="reveal-up">
-        <div class="footer-grid">
-            <div class="footer-col">
-                <h4>PROFESSIONAL</h4>
-                <ul>
-                    <li><a href="https://linkedin.com/in/shayanazmi" target="_blank">LinkedIn</a></li>
-                    <li><a href="https://github.com/shayanazmi" target="_blank">GitHub</a></li>
-                    <li><a href="mailto:shayanazmi2006@gmail.com">Email Me</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>CREATIVE</h4>
-                <ul>
-                    <li><a href="https://instagram.com/letsclicksomephotos" target="_blank">Photography (IG)</a></li>
-                    <li><a href="https://instagram.com/_shayanazmi_" target="_blank">Personal (IG)</a></li>
-                    <li><a href="#" target="_blank">Rekhta Profile</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>MEDIA</h4>
-                <ul>
-                    <li><a href="#" target="_blank">Spotify Profile</a></li>
-                    <li><a href="#" target="_blank">YouTube</a></li>
-                </ul>
-            </div>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; margin-bottom: 3rem;">
+            <h4 style="font-size: 0.9rem; letter-spacing: 2px; margin-bottom: 1.5rem; color: var(--text-muted); text-transform: uppercase;">Connect and know more about me through</h4>
+            <ul style="list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem; padding: 0;">
+                <li><a href="https://linkedin.com/in/shayanazmi" target="_blank" style="color: var(--text-main); text-decoration: none; transition: color 0.3s;">LinkedIn</a></li>
+                <li><a href="https://github.com/shayanazmi" target="_blank" style="color: var(--text-main); text-decoration: none; transition: color 0.3s;">GitHub</a></li>
+                <li><a href="mailto:shayanazmi2006@gmail.com" style="color: var(--text-main); text-decoration: none; transition: color 0.3s;">Email Me</a></li>
+                <li><a href="https://instagram.com/letsclicksomephotos" target="_blank" style="color: var(--text-main); text-decoration: none; transition: color 0.3s;">Photography (IG)</a></li>
+                <li><a href="https://instagram.com/_shayanazmi_" target="_blank" style="color: var(--text-main); text-decoration: none; transition: color 0.3s;">Personal (IG)</a></li>
+                <li><a href="https://open.spotify.com/user/31thgdemedl2dwbnerzmneg3pusu?si=2f9a60b102684467" target="_blank" style="color: var(--text-main); text-decoration: none; transition: color 0.3s;">Spotify Profile</a></li>
+            </ul>
         </div>
         <a href="mailto:shayanazmi2006@gmail.com" class="huge-contact">Say Hello.</a>
         
@@ -1334,12 +1320,12 @@
         let app, auth, db, appId;
         try {
             const firebaseConfig = {
-                apiKey: ['AIzaSy', 'CROTl9vNo', 'Jopw0i0zjfwE', 'WeIEZ2kEtzZo'].join(''),
+                apiKey: ['AIzaSyCROTl9vNo', 'Jopwoi0zjfweM', 'eIEZ2ketzZo'].join(''),
                 authDomain: "shayan-portfolio-website.firebaseapp.com",
                 projectId: "shayan-portfolio-website",
                 storageBucket: "shayan-portfolio-website.firebasestorage.app",
                 messagingSenderId: "486161492413",
-                appId: "1:486161492413:web:0e848fced6a117ab640ad4",
+                appId: "1:486161492413:web:0e845fced5a117ab548ad4",
                 measurementId: "G-SKCNC8E681"
             };
             app = initializeApp(firebaseConfig);
