@@ -363,7 +363,7 @@
     <div class="nav-wrapper">
         <nav>
             <div class="nav-logo">Shayan Azmi</div>
-            <button class="toggle-btn" id="alter-ego-toggle">View: Creative Lens</button>
+            <button class="toggle-btn" id="alter-ego-toggle" style="font-weight: 800; letter-spacing: 2px;">ALTEREGO</button>
         </nav>
     </div>
 
@@ -557,10 +557,8 @@
             <div class="falling-pattern-overlay"></div>
         </div>
 
-        <!-- ENTROPY BACKGROUND COMPONENT (Creative Side) -->
-        <div class="entropy-container" id="bg-creative" style="opacity: 0;">
-            <canvas id="entropy-canvas"></canvas>
-        </div>
+        <!-- NO BACKGROUND IN CREATIVE MODE (Replaced by discrete component) -->
+        <div id="bg-creative" style="opacity: 0; position: absolute; pointer-events: none;"></div>
 
         <!-- TECH & DATA INTRO -->
         <div id="tech-hero-section" class="hero-container fade-content">
@@ -578,9 +576,16 @@
             <h1 class="hero-hook reveal-up" id="ui-crea-hook" style="font-style: italic;">Expanding<br>my canvas.</h1>
             <div class="hero-intro reveal-up">
                 <p id="ui-crea-p1">Hey My name is Shayan, Shayan Azmi. Hahaha i know very bond like intro but yes i am creative peice god has made.</p>
-                <p id="ui-crea-p2">Well for starting let me start with things i am thoda thoda intrested in apart from my course work or my carreer (ehhh AI, data science and everything in between) - photography, filmaking, poetry, psychology, philosophy, cognitive behaviour of the society, politics, societal behaviour, travelling, exploring diverse culture; demographies and people while staying strong with my roots.</p>
-                <p id="ui-crea-p3">Ahan roots to talk about i am from patna; yes that litti choka waka patna in bihar (if you are in my city hit me up; i might be around the corner eating “dahi - sev bundiya” at the "hanuman mandir rajbhansi nagar”)</p>
-                <p id="ui-crea-p4">Comming to my edu and things and i trying to learn, apply and contribute to and with are the big 2 - Data and AI; since i am currently in my undergrad i have not speicifed my niche and still diversifying my portfolio to first try and then decide.</p>
+                <div style="display: flex; flex-direction: column; gap: 2rem;">
+                    <p id="ui-crea-p2">Well for starting let me start with things i am thoda thoda intrested in apart from my course work or my carreer (ehhh AI, data science and everything in between) - photography, filmaking, poetry, psychology, philosophy, cognitive behaviour of the society, politics, societal behaviour, travelling, exploring diverse culture; demographies and people while staying strong with my roots.</p>
+                    <p id="ui-crea-p3">Ahan roots to talk about i am from patna; yes that litti choka waka patna in bihar (if you are in my city hit me up; i might be around the corner eating “dahi - sev bundiya” at the "hanuman mandir rajbhansi nagar”)</p>
+                    <p id="ui-crea-p4">Comming to my edu and things and i trying to learn, apply and contribute to and with are the big 2 - Data and AI; since i am currently in my undergrad i have not speicifed my niche and still diversifying my portfolio to first try and then decide.</p>
+                </div>
+                <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%;">
+                    <div style="position: relative; width: 100%; max-width: 400px; aspect-ratio: 1/1; background-color: #000; border-radius: 0.5rem; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5); opacity: 0.65;">
+                        <canvas id="entropy-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -675,8 +680,10 @@
     <div id="creative-content" class="fade-content hidden">
         
         <!-- CREATIVE QUOTE ENGINE -->
-        <div class="quote-container reveal-up">
-            <div class="dynamic-quote-text" id="creative-quote-display">"Loading thoughts..."</div>
+        <div class="quote-container reveal-up" style="margin-top: 2rem;">
+            <div class="dynamic-quote-text" id="creative-quote-display">
+                "Order and chaos dance —<br><span style="opacity: 0.7;">digital poetry in motion."</span>
+            </div>
             <div class="dynamic-quote-author" id="creative-quote-author">- Shayan Azmi</div>
         </div>
 
@@ -888,20 +895,23 @@
             animate();
         }
 
-        // --- ENTROPY CANVAS LOGIC (Vanilla JS Port) ---
+        // --- ENTROPY CANVAS LOGIC (Re-Engineered Demo Component) ---
         function initEntropyCanvas() {
             const canvas = document.getElementById('entropy-canvas');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
-            let width, height, animationId, time = 0;
+            let animationId, time = 0;
             let particles = [];
+            
+            const size = 400; // Fixed size to exactly match requested React component style
+            const particleColor = '#ffffff'; // White theme
 
-            function resize() {
-                width = canvas.parentElement.clientWidth;
-                height = canvas.parentElement.clientHeight;
+            function setup() {
                 const dpr = window.devicePixelRatio || 1;
-                canvas.width = width * dpr;
-                canvas.height = height * dpr;
+                canvas.width = size * dpr;
+                canvas.height = size * dpr;
+                canvas.style.width = `${size}px`;
+                canvas.style.height = `${size}px`;
                 ctx.scale(dpr, dpr);
                 createParticles();
             }
@@ -921,6 +931,7 @@
                         const dx = this.originalX - this.x;
                         const dy = this.originalY - this.y;
                         const chaosInfluence = {x:0, y:0};
+                        
                         this.neighbors.forEach(neighbor => {
                             if(!neighbor.order) {
                                 const distance = Math.hypot(this.x - neighbor.x, this.y - neighbor.y);
@@ -930,6 +941,7 @@
                                 this.influence = Math.max(this.influence, strength);
                             }
                         });
+                        
                         this.x += dx * 0.05 * (1 - this.influence) + chaosInfluence.x * this.influence;
                         this.y += dy * 0.05 * (1 - this.influence) + chaosInfluence.y * this.influence;
                         this.influence *= 0.99;
@@ -940,15 +952,16 @@
                         this.velocity.y *= 0.95;
                         this.x += this.velocity.x;
                         this.y += this.velocity.y;
-                        if(this.x < width/2 || this.x > width) this.velocity.x *= -1;
-                        if(this.y < 0 || this.y > height) this.velocity.y *= -1;
-                        this.x = Math.max(width/2, Math.min(width, this.x));
-                        this.y = Math.max(0, Math.min(height, this.y));
+                        
+                        if(this.x < size/2 || this.x > size) this.velocity.x *= -1;
+                        if(this.y < 0 || this.y > size) this.velocity.y *= -1;
+                        this.x = Math.max(size/2, Math.min(size, this.x));
+                        this.y = Math.max(0, Math.min(size, this.y));
                     }
                 }
                 draw(ctx) {
                     const alpha = this.order ? 0.8 - this.influence * 0.5 : 0.8;
-                    ctx.fillStyle = `rgba(229, 169, 60, ${alpha})`;
+                    ctx.fillStyle = `${particleColor}${Math.round(alpha * 255).toString(16).padStart(2, '0')}`;
                     ctx.beginPath();
                     ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
                     ctx.fill();
@@ -957,22 +970,14 @@
 
             function createParticles() {
                 particles = [];
-                const spacing = 45; // Increased spacing for performance
-                let cols = Math.floor(width / spacing);
-                let rows = Math.floor(height / spacing);
-                
-                // Hard cap max bounds to prevent O(N^2) lockups on huge high-res screens
-                if (cols * rows > 350) {
-                    const ratio = Math.sqrt(350 / (cols * rows));
-                    cols = Math.floor(cols * ratio);
-                    rows = Math.floor(rows * ratio);
-                }
+                const gridSize = 25;
+                const spacing = size / gridSize;
 
-                for (let i = 0; i < cols; i++) {
-                    for (let j = 0; j < rows; j++) {
-                        const x = (width / cols) * i + (width / cols) / 2;
-                        const y = (height / rows) * j + (height / rows) / 2;
-                        const order = x < width / 2; 
+                for (let i = 0; i < gridSize; i++) {
+                    for (let j = 0; j < gridSize; j++) {
+                        const x = spacing * i + spacing / 2;
+                        const y = spacing * j + spacing / 2;
+                        const order = x < size / 2; 
                         particles.push(new Particle(x, y, order));
                     }
                 }
@@ -982,8 +987,6 @@
                 particles.forEach(particle => {
                     particle.neighbors = particles.filter(other => {
                         if (other === particle) return false;
-                        // Fast pre-check utilizing Math.abs to avoid intense Math.hypot load
-                        if (Math.abs(particle.x - other.x) > 100 || Math.abs(particle.y - other.y) > 100) return false;
                         const distance = Math.hypot(particle.x - other.x, particle.y - other.y);
                         return distance < 100;
                     });
@@ -991,7 +994,8 @@
             }
 
             function animate() {
-                ctx.clearRect(0, 0, width, height);
+                ctx.clearRect(0, 0, size, size);
+                
                 if (time % 30 === 0) updateNeighbors();
 
                 particles.forEach(particle => {
@@ -1002,7 +1006,7 @@
                         const distance = Math.hypot(particle.x - neighbor.x, particle.y - neighbor.y);
                         if (distance < 50) {
                             const alpha = 0.2 * (1 - distance / 50);
-                            ctx.strokeStyle = `rgba(229, 169, 60, ${alpha})`;
+                            ctx.strokeStyle = `${particleColor}${Math.round(alpha * 255).toString(16).padStart(2, '0')}`;
                             ctx.beginPath();
                             ctx.moveTo(particle.x, particle.y);
                             ctx.lineTo(neighbor.x, neighbor.y);
@@ -1011,19 +1015,18 @@
                     });
                 });
 
-                ctx.strokeStyle = `rgba(229, 169, 60, 0.3)`;
+                ctx.strokeStyle = `${particleColor}4D`;
                 ctx.lineWidth = 0.5;
                 ctx.beginPath();
-                ctx.moveTo(width / 2, 0);
-                ctx.lineTo(width / 2, height);
+                ctx.moveTo(size / 2, 0);
+                ctx.lineTo(size / 2, size);
                 ctx.stroke();
 
                 time++;
                 animationId = requestAnimationFrame(animate);
             }
 
-            window.addEventListener('resize', resize);
-            resize();
+            setup();
             animate();
         }
 
@@ -1628,7 +1631,7 @@
                     }
                 }, 50);
                 
-                toggleBtn.innerHTML = document.body.classList.contains('creative-mode') ? "View: Technical Lens" : "View: Creative Lens";
+                // Button text 'ALTEREGO' is static now
             }, 400); 
         });
 
