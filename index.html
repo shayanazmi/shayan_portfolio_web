@@ -1,0 +1,1836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shayan Azmi | Cinematic</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Side A: Tech Mode */
+            --bg-color: #030304;
+            --text-main: #ffffff;
+            --text-muted: #888890;
+            --accent: #00e1ff; /* Brighter, more electric cyan */
+            --card-bg: rgba(255, 255, 255, 0.02);
+            --card-border: rgba(255, 255, 255, 0.06);
+            --card-hover: rgba(255, 255, 255, 0.04);
+            
+            --font-display: 'Playfair Display', serif;
+            --font-body: 'Inter', sans-serif;
+            
+            --transition-slow: 1s cubic-bezier(0.16, 1, 0.3, 1);
+            --transition-fast: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        body.creative-mode {
+            /* Side B: Creative Mode */
+            --bg-color: #050403;
+            --text-main: #fcfcfc;
+            --text-muted: #9a9085;
+            --accent: #E5A93C;
+            --card-bg: rgba(229, 169, 60, 0.015);
+            --card-border: rgba(229, 169, 60, 0.1);
+            --card-hover: rgba(229, 169, 60, 0.04);
+        }
+
+        /* --- CSS RESET & BASE --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        ::selection { background: var(--accent); color: var(--bg-color); }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            transition: background-color var(--transition-slow);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Responsive Text Wrapping */
+        p, h1, h2, h3, h4, span, li, a { overflow-wrap: break-word; word-break: break-word; }
+
+        /* --- CINEMATIC EFFECTS --- */
+        /* Film Grain Noise */
+        .noise-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none; z-index: 9998; opacity: 0.035;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* Ambient Lighting Background */
+        body::before {
+            content: ''; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle at 50% 30%, var(--accent) 0%, transparent 25%);
+            opacity: 0.04; z-index: -1; pointer-events: none;
+            transition: background var(--transition-slow);
+        }
+
+        h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 400; }
+        a { color: var(--text-main); text-decoration: none; transition: color var(--transition-fast); }
+        a:hover { color: var(--accent); }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 5vw; }
+
+        /* --- FLOATING NAV --- */
+        .nav-wrapper {
+            position: fixed; top: 2rem; left: 0; width: 100%; z-index: 100;
+            display: flex; justify-content: center; pointer-events: none;
+        }
+        nav {
+            pointer-events: auto;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.8rem 1.5rem; border-radius: 100px;
+            background: rgba(10, 10, 12, 0.4);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 90%; max-width: 1000px;
+            transition: all var(--transition-slow);
+        }
+        .nav-logo { font-size: 1rem; font-weight: 500; letter-spacing: 3px; text-transform: uppercase; }
+
+        .toggle-btn {
+            background: transparent; color: var(--text-main);
+            border: 1px solid rgba(255,255,255,0.15);
+            padding: 0.5rem 1.2rem; border-radius: 50px;
+            font-family: var(--font-body); font-size: 0.75rem; font-weight: 500;
+            letter-spacing: 1.5px; text-transform: uppercase;
+            cursor: pointer; transition: all var(--transition-fast);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .toggle-btn::before {
+            content: ''; display: inline-block; width: 6px; height: 6px;
+            border-radius: 50%; background: var(--accent);
+            transition: background var(--transition-slow), box-shadow var(--transition-fast);
+            box-shadow: 0 0 8px var(--accent);
+        }
+        .toggle-btn:hover { border-color: var(--accent); background: rgba(255,255,255,0.03); }
+
+        /* --- FALLING PATTERN BACKGROUND (TECH) --- */
+        .falling-pattern-container {
+            position: absolute; inset: 0; z-index: 0; overflow: hidden;
+            mask-image: radial-gradient(ellipse at center, black 10%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 10%, transparent 80%);
+            transition: opacity var(--transition-slow); pointer-events: none;
+        }
+        
+        #falling-pattern-canvas { display: block; width: 100%; height: 100%; opacity: 0.8; }
+
+        .falling-pattern-overlay {
+            position: absolute; inset: 0; z-index: 1; pointer-events: none;
+            backdrop-filter: blur(1em); -webkit-backdrop-filter: blur(1em);
+            background-image: radial-gradient(circle at 50% 50%, transparent 0, transparent 2px, var(--bg-color) 2px);
+            background-size: 8px 8px;
+            transition: background-image var(--transition-slow);
+        }
+
+        /* --- ENTROPY BACKGROUND (CREATIVE) --- */
+        .entropy-container {
+            position: absolute; inset: 0; z-index: 0; overflow: hidden;
+            mask-image: radial-gradient(ellipse at center, black 10%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 10%, transparent 80%);
+            transition: opacity var(--transition-slow); pointer-events: none;
+        }
+        #entropy-canvas { display: block; width: 100%; height: 100%; }
+
+        /* --- DUAL HERO (GRID STACK TO PREVENT OVERLAP) --- */
+        .hero {
+            min-height: 100vh; display: grid; align-items: center;
+            padding: 180px 5vw 8rem 5vw; position: relative;
+        }
+        .hero-container { 
+            grid-column: 1; grid-row: 1; width: 100%; max-width: 1400px; margin: 0 auto; 
+            z-index: 10; pointer-events: auto;
+        }
+        
+        .hero-hook {
+            font-size: clamp(3.5rem, 10vw, 8rem); line-height: 0.95; margin-bottom: 3rem;
+            letter-spacing: -0.03em;
+            background: linear-gradient(180deg, #ffffff 0%, rgba(255,255,255,0.3) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            white-space: pre-line; text-indent: -0.05em;
+        }
+        body.creative-mode .hero-hook {
+            font-style: italic;
+            background: linear-gradient(180deg, var(--accent) 0%, rgba(229,169,60,0.1) 100%);
+            -webkit-background-clip: text;
+        }
+        
+        .hero-intro { 
+            display: grid; grid-template-columns: 1fr; gap: 2rem; max-width: 1000px; 
+        }
+        @media (min-width: 900px) {
+            .hero-intro { grid-template-columns: 1fr 1fr; gap: 4rem; }
+            .hero-intro p:first-of-type { grid-column: 1 / -1; }
+        }
+        
+        .hero-intro p { font-size: 1.05rem; color: var(--text-muted); font-weight: 300; line-height: 1.8; }
+        .hero-intro p:first-of-type { 
+            font-size: clamp(1.5rem, 3vw, 2.2rem); color: var(--text-main); 
+            font-family: var(--font-display); line-height: 1.4; margin-bottom: 1rem; 
+        }
+
+        /* --- SECTIONS & EDITORIAL HEADERS --- */
+        section { padding: 8rem 0; position: relative; z-index: 10; }
+        .section-title { 
+            font-size: clamp(2rem, 5vw, 3.5rem); margin-bottom: 4rem; 
+            display: flex; align-items: center; gap: 2rem; color: var(--text-main); 
+        }
+        .section-title::after { 
+            content: ''; height: 1px; flex-grow: 1; 
+            background: linear-gradient(90deg, var(--card-border) 0%, transparent 100%); 
+        }
+        .section-subtitle {
+            display: block; font-family: var(--font-body); font-size: 0.75rem; 
+            text-transform: uppercase; letter-spacing: 3px; color: var(--accent); 
+            margin-bottom: 0.5rem; font-weight: 600;
+        }
+
+        /* --- PREMIUM GLASS CARDS --- */
+        .projects-grid, .two-col-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; }
+        .project-card, .glass-card {
+            background: linear-gradient(145deg, var(--card-bg) 0%, rgba(0,0,0,0) 100%);
+            border: 1px solid var(--card-border);
+            border-radius: 16px; padding: 3rem 2.5rem; display: flex; flex-direction: column;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            position: relative; overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        
+        .project-card::before, .glass-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at top right, rgba(255,255,255,0.03) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .project-card:hover, .glass-card:hover { 
+            transform: translateY(-8px); 
+            border-color: rgba(255,255,255,0.15);
+            background: linear-gradient(145deg, var(--card-hover) 0%, rgba(0,0,0,0) 100%);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.4), 0 0 20px rgba(var(--accent), 0.05);
+        }
+
+        .project-title { font-size: 1.8rem; margin-bottom: 1rem; color: var(--text-main); line-height: 1.2; }
+        .project-desc { flex-grow: 1; margin-bottom: 2.5rem; color: var(--text-muted); font-size: 0.95rem; font-weight: 300;}
+        .project-link { 
+            font-size: 0.75rem; font-weight: 600; text-transform: uppercase; 
+            letter-spacing: 2px; display: inline-flex; align-items: center; gap: 8px; margin-top: auto; 
+            color: var(--accent); border-bottom: 1px solid transparent; padding-bottom: 2px;
+        }
+        .project-link::after { content: '→'; transition: transform var(--transition-fast); }
+        .project-link:hover { border-color: var(--accent); }
+        .project-link:hover::after { transform: translateX(5px); }
+
+        .media-meta { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 0.5rem; display: block; }
+        .media-list { list-style: none; }
+        .media-list li { padding: 1.5rem 0; border-bottom: 1px solid var(--card-border); display: flex; flex-direction: column; transition: border-color var(--transition-fast);}
+        .media-list li:hover { border-color: rgba(255,255,255,0.15); }
+        .media-list li:last-child { border-bottom: none; padding-bottom: 0; }
+        .media-title { font-family: var(--font-display); font-size: 1.5rem; color: var(--text-main); margin-bottom: 0.2rem; }
+        .media-list li.hidden-item { display: none; }
+
+        .skills-container { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+        .skill-tag {
+            border: 1px solid var(--card-border); padding: 0.6rem 1.2rem; border-radius: 100px;
+            font-size: 0.8rem; letter-spacing: 1px; color: var(--text-muted); 
+            transition: all var(--transition-fast); background: rgba(0,0,0,0.2);
+        }
+        .skill-tag:hover { color: var(--bg-color); background: var(--text-main); border-color: var(--text-main); }
+
+        /* --- FADE UTILS & SCROLL ANIMATIONS --- */
+        .fade-content { opacity: 1; transition: opacity 0.6s ease; }
+        .fade-content.hidden { opacity: 0; pointer-events: none; position: absolute; visibility: hidden; height: 0; overflow: hidden; z-index: -1; }
+        main.fade-content.hidden, div#tech-content.hidden, div#creative-content.hidden { position: absolute; height: 0; overflow: hidden; }
+
+        .reveal-up { opacity: 0; transform: translateY(40px); transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        .reveal-up.active { opacity: 1; transform: translateY(0); }
+        .projects-grid > :nth-child(1) { transition-delay: 0.1s; }
+        .projects-grid > :nth-child(2) { transition-delay: 0.2s; }
+        .projects-grid > :nth-child(3) { transition-delay: 0.3s; }
+        .projects-grid > :nth-child(4) { transition-delay: 0.4s; }
+
+        /* --- CREATIVE MODULES --- */
+        .quote-container { 
+            text-align: center; padding: 8rem 2rem; border-bottom: 1px solid var(--card-border); 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 40vh;
+        }
+        .dynamic-quote-text { 
+            font-family: var(--font-display); font-size: clamp(2rem, 5vw, 4rem); 
+            font-style: italic; color: var(--accent); line-height: 1.2; margin-bottom: 2rem; 
+            max-width: 1000px; 
+        }
+        .dynamic-quote-author { color: var(--text-main); letter-spacing: 3px; text-transform: uppercase; font-size: 0.8rem; font-weight: 600;}
+
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 2rem;}
+        .gallery-item { aspect-ratio: 4/5; border-radius: 12px; background: #111; position: relative; overflow: hidden; cursor: pointer; display: block; }
+        .gallery-item.hidden-item { display: none; }
+        .gallery-item img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(20%) contrast(1.1); transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1), filter 0.8s ease; }
+        .gallery-item:hover img { filter: grayscale(0%) contrast(1); transform: scale(1.08); }
+        .ig-overlay { 
+            position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%); 
+            display: flex; align-items: flex-end; justify-content: flex-start; opacity: 0; transition: opacity var(--transition-fast); 
+            color: #fff; font-family: var(--font-display); font-size: 1.2rem; padding: 2rem;
+        }
+        .gallery-item:hover .ig-overlay { opacity: 1; }
+        .center-btn-container { display: flex; justify-content: center; margin-top: 3rem;}
+
+        .map-container {
+            width: 100%; height: 600px; background: radial-gradient(circle at center, rgba(255,255,255,0.02) 0%, transparent 100%);
+            border: 1px solid var(--card-border); border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-direction: column; color: var(--text-muted); position: relative; overflow: hidden;
+        }
+        .map-container::after { content: 'Interactive Map Offline'; font-family: var(--font-display); font-size: 1.5rem; font-style: italic; color: rgba(255,255,255,0.2);}
+
+        /* --- ADMIN CMS UI --- */
+        #admin-panel {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 9999;
+            display: none; justify-content: center; align-items: center; flex-direction: column; color: #fff;
+        }
+        .admin-card {
+            background: #0a0a0c; border: 1px solid #222; border-radius: 16px; padding: 2.5rem; width: 95%; max-width: 700px;
+            max-height: 90vh; overflow-y: auto; box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+        }
+        .admin-card h2 { font-family: var(--font-display); margin-bottom: 1.5rem; color: var(--accent); }
+        .admin-input, .admin-textarea, .admin-select { width: 100%; padding: 1rem; margin-bottom: 1rem; background: #000; border: 1px solid #222; color: #fff; border-radius: 8px; font-family: var(--font-body); font-size: 0.9rem;}
+        .admin-textarea { resize: vertical; min-height: 100px; }
+        .admin-input:focus, .admin-textarea:focus { outline: none; border-color: var(--accent); }
+        .admin-btn { width: 100%; padding: 1.2rem; background: var(--accent); color: #000; border: none; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; border-radius: 8px; margin-bottom: 1rem; transition: 0.2s;}
+        .admin-btn:hover { filter: brightness(1.2); }
+        .admin-btn-delete { background: #ff3333; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;}
+        .close-admin { position: absolute; top: 2rem; right: 2rem; background: none; border: none; color: #fff; font-size: 2.5rem; cursor: pointer; z-index: 10000; transition: transform 0.2s;}
+        .close-admin:hover { transform: scale(1.2); }
+        .admin-tab-container { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 2rem; border-bottom: 1px solid #222; padding-bottom: 1.5rem;}
+        .admin-tab { flex: 1; min-width: 80px; padding: 0.6rem; text-align: center; font-size: 0.8rem; border: 1px solid #222; border-radius: 6px; cursor: pointer; transition: 0.2s;}
+        .admin-tab:hover { background: #111; }
+        .admin-tab.active { border-color: var(--accent); background: rgba(255,255,255,0.05); color: var(--accent); font-weight: 600;}
+        .admin-form { display: none; }
+        .admin-form.active { display: block; animation: fadeIn 0.4s ease; }
+        .status-msg { color: #4ade80; font-size: 0.9rem; text-align: center; min-height: 20px;}
+
+        /* Passcode Modal */
+        #passcode-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 10000;
+            display: none; justify-content: center; align-items: center; flex-direction: column;
+        }
+        .passcode-card {
+            background: #0a0a0c; border: 1px solid #222; border-radius: 16px; padding: 3rem; text-align: center; width: 90%; max-width: 400px;
+        }
+
+        /* --- FOOTER --- */
+        footer { padding: 8rem 5vw 4rem 5vw; border-top: 1px solid var(--card-border); position: relative; text-align: center;}
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 4rem; max-width: 1400px; margin: 0 auto; text-align: left; margin-bottom: 6rem;}
+        .footer-col h4 { color: var(--text-main); margin-bottom: 1.5rem; font-family: var(--font-body); font-size: 0.75rem; letter-spacing: 3px; font-weight: 600;}
+        .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 1rem; }
+        .footer-col a { font-size: 1.1rem; color: var(--text-muted); transition: color 0.3s; overflow-wrap: break-word;}
+        .footer-col a:hover { color: var(--text-main); }
+        
+        .huge-contact { 
+            font-size: clamp(3rem, 8vw, 7rem); font-family: var(--font-display); font-style: italic; 
+            display: inline-block; color: var(--text-main); margin-bottom: 2rem;
+            position: relative;
+        }
+        .huge-contact::after {
+            content: ''; position: absolute; width: 100%; height: 2px; bottom: 10px; left: 0;
+            background: var(--accent); transform: scaleX(0); transform-origin: right; transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .huge-contact:hover::after { transform: scaleX(1); transform-origin: left; }
+
+        .admin-trigger { position: absolute; bottom: 20px; right: 20px; opacity: 0.05; font-size: 0.7rem; cursor: pointer; transition: opacity 0.4s; z-index: 50; letter-spacing: 2px;}
+        .admin-trigger:hover { opacity: 1; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="noise-overlay"></div>
+
+    <div class="nav-wrapper">
+        <nav>
+            <div class="nav-logo">Shayan Azmi</div>
+            <button class="toggle-btn" id="alter-ego-toggle">View: Creative Lens</button>
+        </nav>
+    </div>
+
+    <!-- PASSCODE MODAL -->
+    <div id="passcode-modal">
+        <button class="close-admin" id="close-passcode">&times;</button>
+        <div class="passcode-card">
+            <h3 style="color: var(--text-main); font-family: var(--font-display); font-size: 2rem; margin-bottom: 2rem; font-style: italic;">Authentication</h3>
+            
+            <div style="position: relative; width: 100%; margin-bottom: 1.5rem;">
+                <input type="password" id="passcode-input" class="admin-input" placeholder="Enter Passcode" style="text-align: center; letter-spacing: 4px; margin-bottom: 0; padding-right: 60px; font-size: 1.2rem;">
+                <button id="toggle-pass-vis" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">Show</button>
+            </div>
+            
+            <button id="passcode-submit" class="admin-btn" style="margin-bottom: 1.5rem;">Unlock Dashboard</button>
+            <button id="forgot-pass-btn" style="background: none; border: none; color: var(--text-muted); font-size: 0.8rem; cursor: pointer; text-decoration: underline; font-family: var(--font-body); letter-spacing: 1px;">Forgot Password?</button>
+            
+            <p id="passcode-error" style="color: #ff3333; margin-top: 1rem; font-size: 0.85rem; display: none;">Access Denied.</p>
+
+            <!-- AI Recovery Prompt -->
+            <div id="ai-recovery-steps" style="display: none; margin-top: 2rem; text-align: left; background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                <p style="color: var(--accent); font-size: 0.75rem; margin-bottom: 1rem; font-weight: 600; letter-spacing: 1px;">[SYSTEM PROMPT FOR AI ASSISTANT]</p>
+                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.8;">To recover or change the admin password, scan the <code>cinematic.html</code> code. Locate the Javascript event listener for <code>passcode-submit</code>. Find the exact conditional statement: <br><br><code style="color: #fff; background: #000; padding: 2px 6px; border-radius: 4px;">if(passcodeInput.value === 'shayan2026')</code><br><br>Replace 'shayan2026' with the user's newly requested password and regenerate the file.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN PANEL (The CMS UI) -->
+    <div id="admin-panel">
+        <button class="close-admin" id="close-admin">&times;</button>
+        <div class="admin-card">
+            <h2 style="font-style: italic; font-size: 2.2rem;">CMS Dashboard</h2>
+            <div class="admin-tab-container">
+                <div class="admin-tab active" data-target="form-intro">UI Text</div>
+                <div class="admin-tab" data-target="form-spotify">Spotify</div>
+                <div class="admin-tab" data-target="form-projects">Projects</div>
+                <div class="admin-tab" data-target="form-experience">Experience</div>
+                <div class="admin-tab" data-target="form-education">Education</div>
+                <div class="admin-tab" data-target="form-certifications">Certs</div>
+                <div class="admin-tab" data-target="form-gallery">Photos</div>
+                <div class="admin-tab" data-target="form-poetry">Poetry</div>
+                <div class="admin-tab" data-target="form-articles">Articles</div>
+                <div class="admin-tab" data-target="form-videos">Videos</div>
+                <div class="admin-tab" data-target="form-quotes">Quotes</div>
+                <div class="admin-tab" data-target="form-manage" style="border-color: #ff3333; color: #ff3333;">Manage / Delete</div>
+            </div>
+            
+            <!-- 1. Edit UI Text (Dual Introductions) -->
+            <div id="form-intro" class="admin-form active">
+                <p style="margin-bottom:1.5rem; color: var(--text-muted); font-size: 0.85rem;">Update the introductions for both sides of your portfolio.</p>
+                
+                <h4 style="color: var(--accent); margin-bottom: 1rem; font-family: var(--font-display); font-size: 1.2rem;">Tech & Data Introduction</h4>
+                <input type="text" id="admin-tech-hook" class="admin-input" placeholder="Tech Hero Hook (e.g. Engineering my future.)">
+                <textarea id="admin-tech-p1" class="admin-textarea" placeholder="Tech Paragraph 1"></textarea>
+                <textarea id="admin-tech-p2" class="admin-textarea" placeholder="Tech Paragraph 2"></textarea>
+                <textarea id="admin-tech-p3" class="admin-textarea" placeholder="Tech Paragraph 3"></textarea>
+                <textarea id="admin-tech-p4" class="admin-textarea" placeholder="Tech Paragraph 4"></textarea>
+
+                <h4 style="color: var(--accent); margin: 2rem 0 1rem; font-family: var(--font-display); font-size: 1.2rem;">Creative Canvas Introduction</h4>
+                <input type="text" id="admin-crea-hook" class="admin-input" placeholder="Creative Hero Hook (e.g. Expanding my canvas.)">
+                <textarea id="admin-crea-p1" class="admin-textarea" placeholder="Creative Paragraph 1"></textarea>
+                <textarea id="admin-crea-p2" class="admin-textarea" placeholder="Creative Paragraph 2"></textarea>
+                <textarea id="admin-crea-p3" class="admin-textarea" placeholder="Creative Paragraph 3"></textarea>
+                <textarea id="admin-crea-p4" class="admin-textarea" placeholder="Creative Paragraph 4"></textarea>
+
+                <button class="admin-btn" id="save-ui-btn">Save Both Introductions</button>
+            </div>
+
+            <!-- Spotify Embed -->
+            <div id="form-spotify" class="admin-form">
+                <p style="margin-bottom:1rem; color: var(--text-muted); font-size: 0.85rem;">Paste your Spotify Embed URL here.<br><br><i>How to get it: On Spotify, right click a Playlist/Profile -> Share -> Embed -> Copy the src="..." link. It should start with https://open.spotify.com/embed/</i></p>
+                <input type="text" id="admin-spotify-url" class="admin-input" placeholder="e.g. https://open.spotify.com/embed/playlist/...">
+                <button class="admin-btn" id="save-spotify-btn">Update Music Player</button>
+            </div>
+
+            <!-- 2. Projects (Side A) -->
+            <div id="form-projects" class="admin-form">
+                <input type="number" id="admin-proj-priority" class="admin-input" placeholder="Priority (1 = Top, 2, 3...)">
+                <input type="text" id="admin-proj-title" class="admin-input" placeholder="Project Title">
+                <textarea id="admin-proj-desc" class="admin-textarea" placeholder="Project Description"></textarea>
+                <input type="text" id="admin-proj-link" class="admin-input" placeholder="GitHub or Live URL">
+                <button class="admin-btn" id="save-proj-btn">Add Project</button>
+            </div>
+
+            <!-- Experience -->
+            <div id="form-experience" class="admin-form">
+                <input type="number" id="admin-exp-priority" class="admin-input" placeholder="Priority (1 = Top, 2, 3...)">
+                <input type="text" id="admin-exp-title" class="admin-input" placeholder="Role @ Company (e.g. AI Intern @ C-DAC)">
+                <textarea id="admin-exp-desc" class="admin-textarea" placeholder="Description / Achievements"></textarea>
+                <input type="text" id="admin-exp-meta" class="admin-input" placeholder="Date • Location (e.g. Jun 2025 • Patna)">
+                <button class="admin-btn" id="save-exp-btn">Add Experience</button>
+            </div>
+
+            <!-- Education -->
+            <div id="form-education" class="admin-form">
+                <input type="number" id="admin-edu-priority" class="admin-input" placeholder="Priority (1 = Top, 2, 3...)">
+                <input type="text" id="admin-edu-title" class="admin-input" placeholder="Degree / Course (e.g. B.Sc. Data Science & AI)">
+                <input type="text" id="admin-edu-meta" class="admin-input" placeholder="Institution • GPA/Score (e.g. Christ University • 3/4 GPA)">
+                <button class="admin-btn" id="save-edu-btn">Add Education</button>
+            </div>
+
+            <!-- Certifications -->
+            <div id="form-certifications" class="admin-form">
+                <input type="number" id="admin-cert-priority" class="admin-input" placeholder="Priority (1 = Top, 2, 3...)">
+                <input type="text" id="admin-cert-title" class="admin-input" placeholder="Certificate Name (e.g. Data Analysis With R)">
+                <input type="text" id="admin-cert-meta" class="admin-input" placeholder="Issuer • Score (e.g. Google • Scored 90%)">
+                <button class="admin-btn" id="save-cert-btn">Add Certification</button>
+            </div>
+
+            <!-- Photos -->
+            <div id="form-gallery" class="admin-form">
+                <input type="number" id="admin-img-priority" class="admin-input" placeholder="Priority (1 = Top, 2, 3...)">
+                <p style="margin-bottom:0.5rem; color: var(--text-muted); font-size: 0.85rem;">Upload a local image file (Auto-compresses before saving):</p>
+                <input type="file" id="admin-img-file" class="admin-input" accept="image/png, image/jpeg, image/jpg" style="padding: 0.5rem;">
+                <p style="text-align:center; font-size: 0.8rem; margin-bottom: 0.5rem; color: var(--text-muted);">— OR —</p>
+                <input type="text" id="admin-img-url" class="admin-input" placeholder="Image URL / YouTube Link (Extracts Thumbnail)">
+                <input type="text" id="admin-img-title" class="admin-input" placeholder="Hover Title or Caption">
+                <button class="admin-btn" id="save-photo-btn">Save to Gallery</button>
+            </div>
+
+            <!-- Poetry -->
+            <div id="form-poetry" class="admin-form">
+                <input type="number" id="admin-poem-priority" class="admin-input" placeholder="Priority (1 = Top, 2, 3...)">
+                <input type="text" id="admin-poem-title" class="admin-input" placeholder="Poem Title">
+                <input type="text" id="admin-poem-type" class="admin-input" placeholder="Type (e.g. Ghazal, Nazm)">
+                <textarea id="admin-poem-content" class="admin-textarea" placeholder="Actual Poetry / Written Words..."></textarea>
+                <input type="text" id="admin-poem-link" class="admin-input" placeholder="Rekhta / Website Link (Optional)">
+                <button class="admin-btn" id="save-poem-btn">Save Poetry</button>
+            </div>
+
+            <!-- Articles -->
+            <div id="form-articles" class="admin-form">
+                <input type="number" id="admin-art-priority" class="admin-input" placeholder="Priority (1 = Top, 2, 3...)">
+                <input type="text" id="admin-art-title" class="admin-input" placeholder="Article/Book Title">
+                <input type="text" id="admin-art-meta" class="admin-input" placeholder="Author / Type (e.g. Charlie Munger • Essay)">
+                <input type="text" id="admin-art-link" class="admin-input" placeholder="URL (Optional)">
+                <button class="admin-btn" id="save-art-btn">Add to Reading List</button>
+            </div>
+
+            <!-- Videos -->
+            <div id="form-videos" class="admin-form">
+                <p style="margin-bottom:0.5rem; color: var(--text-muted); font-size: 0.85rem;">Note: Due to database limits, please provide direct video URLs (YouTube/Drive).</p>
+                <input type="number" id="admin-vid-priority" class="admin-input" placeholder="Priority (1 = Top, 2, 3...)">
+                <input type="text" id="admin-vid-title" class="admin-input" placeholder="Video Title">
+                <input type="text" id="admin-vid-meta" class="admin-input" placeholder="Channel / Type (e.g. YouTube • Essay)">
+                <input type="text" id="admin-vid-link" class="admin-input" placeholder="Video URL">
+                <button class="admin-btn" id="save-vid-btn">Add Video</button>
+            </div>
+
+            <!-- Quotes -->
+            <div id="form-quotes" class="admin-form">
+                <p style="margin-bottom:0.5rem; color: var(--text-muted); font-size: 0.85rem;">Select category so quotes show up on the correct side.</p>
+                <select id="admin-quote-category" class="admin-select">
+                    <option value="tech">Tech / Work / Science (For Tech Mode)</option>
+                    <option value="creative">Philosophy / Art (For Creative Mode)</option>
+                </select>
+                <textarea id="admin-quote-text" class="admin-textarea" placeholder="Quote Text (without quotes)"></textarea>
+                <input type="text" id="admin-quote-author" class="admin-input" placeholder="Author">
+                <button class="admin-btn" id="save-quote-btn">Add Quote</button>
+            </div>
+
+            <!-- MANAGE / DELETE -->
+            <div id="form-manage" class="admin-form">
+                <p style="margin-bottom:1rem; color: var(--text-muted); font-size: 0.85rem;">Manually manage and delete content from any section.</p>
+                <select id="manage-category" class="admin-select">
+                    <option value="projects">Projects (Tech Side)</option>
+                    <option value="experience">Experience</option>
+                    <option value="education">Education</option>
+                    <option value="certifications">Certifications</option>
+                    <option value="gallery">Gallery Photos</option>
+                    <option value="poetry">Poetry</option>
+                    <option value="articles">Articles</option>
+                    <option value="videos">Videos</option>
+                    <option value="quotes">Quotes</option>
+                </select>
+                <div id="manage-items-container" style="margin-top: 1rem; max-height: 300px; overflow-y: auto;">
+                    <!-- Items for deletion will appear here -->
+                </div>
+            </div>
+            
+            <div id="admin-status" class="status-msg"></div>
+        </div>
+    </div>
+
+    <!-- DUAL HERO SECTION (GRID STACK) -->
+    <header class="hero">
+        
+        <!-- FALLING PATTERN BACKGROUND COMPONENT (Tech Side) -->
+        <div class="falling-pattern-container" id="bg-tech">
+            <canvas id="falling-pattern-canvas"></canvas>
+            <div class="falling-pattern-overlay"></div>
+        </div>
+
+        <!-- ENTROPY BACKGROUND COMPONENT (Creative Side) -->
+        <div class="entropy-container" id="bg-creative" style="opacity: 0;">
+            <canvas id="entropy-canvas"></canvas>
+        </div>
+
+        <!-- TECH & DATA INTRO -->
+        <div id="tech-hero-section" class="hero-container fade-content">
+            <h1 class="hero-hook reveal-up" id="ui-tech-hook">Data is<br>everywhere.</h1>
+            <div class="hero-intro reveal-up">
+                <p id="ui-tech-p1">Data is everywhere - woven through emotions, behavior, and every human interaction. That realization, born from my passion for photography and understanding people, led me to pursue a BSc in Data Science and AI at Christ University, Delhi NCR. I don't just study algorithms. I study people, societies, and the patterns that connect them; and I build things that reflect that curiosity.</p>
+                <p id="ui-tech-p2">Ranked #1 at C-DAC among 45+ trainees, built a Real Time face mask detection system using Transfer Learning, developed SmartSIP- an AI that suggests Top Up amount of for your SIP using LSTM forecasting and live news sentiment and I'm currently building a RAG-based knowledge system for Olympia Academia. Every project starts with a question, not a tool.</p>
+                <p id="ui-tech-p3">That same curiosity lives beyond the technical. I was selected to lead the Eulim Science Club at Christ University, where I led a team of 25+ students, organized national-level events for 1,500+ students, and drove 900K+ in digital engagement. I am also a Peer Trainer at Center for Health and Counselling Services; Christ University Delhi NCR; because understanding human behavior isn't just something I study, it's something I practice.</p>
+                <p id="ui-tech-p4">Right now, I'm a McKinsey Forward Program fellow and a Round 2 UN Millennium Fellowship applicant, where I'm building the Bihar Agri-Intelligence Hub; an interactive platform visualizing 58 years of Bihar's agricultural data. I believe everything is connected by data. If you're working at the intersection of AI, human behavior, and real-world impact-let's connect.</p>
+            </div>
+        </div>
+
+        <!-- CREATIVE CANVAS INTRO -->
+        <div id="creative-hero-section" class="hero-container fade-content hidden">
+            <h1 class="hero-hook reveal-up" id="ui-crea-hook" style="font-style: italic;">Expanding<br>my canvas.</h1>
+            <div class="hero-intro reveal-up">
+                <p id="ui-crea-p1">Hey My name is Shayan, Shayan Azmi. Hahaha i know very bond like intro but yes i am creative peice god has made.</p>
+                <p id="ui-crea-p2">Well for starting let me start with things i am thoda thoda intrested in apart from my course work or my carreer (ehhh AI, data science and everything in between) - photography, filmaking, poetry, psychology, philosophy, cognitive behaviour of the society, politics, societal behaviour, travelling, exploring diverse culture; demographies and people while staying strong with my roots.</p>
+                <p id="ui-crea-p3">Ahan roots to talk about i am from patna; yes that litti choka waka patna in bihar (if you are in my city hit me up; i might be around the corner eating “dahi - sev bundiya” at the "hanuman mandir rajbhansi nagar”)</p>
+                <p id="ui-crea-p4">Comming to my edu and things and i trying to learn, apply and contribute to and with are the big 2 - Data and AI; since i am currently in my undergrad i have not speicifed my niche and still diversifying my portfolio to first try and then decide.</p>
+            </div>
+        </div>
+
+    </header>
+
+    <!-- SIDE A: TECH & DATA -->
+    <div id="tech-content" class="fade-content">
+        
+        <!-- TECH QUOTE ENGINE -->
+        <div class="quote-container reveal-up" style="border-bottom: none; padding-bottom: 2rem;">
+            <div class="dynamic-quote-text" id="tech-quote-display" style="color: var(--accent);">"Loading..."</div>
+            <div class="dynamic-quote-author" id="tech-quote-author"></div>
+        </div>
+
+        <!-- THE PLAYGROUND (CYBER DINO - ENDLESS RUNNER) -->
+        <section style="border-top: none; padding-top: 0; padding-bottom: 4rem;">
+            <div class="container reveal-up">
+                <div class="glass-card" style="align-items: center; text-align: center; padding: 3rem 1.5rem; max-width: 800px; margin: 0 auto; box-shadow: none;">
+                    <span class="section-subtitle" style="margin-bottom: 1rem;">The Playground</span>
+                    <h3 class="project-title" style="margin-bottom: 0.5rem; font-family: var(--font-body); font-weight: 600; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px;">Cyber Dino</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">Tap the canvas or press Space/Up to jump over the firewalls.</p>
+                    
+                    <div style="position: relative; border: 1px solid var(--card-border); border-radius: 12px; overflow: hidden; display: flex; justify-content: center; background: #010101; width: 100%; box-shadow: inset 0 0 20px rgba(0,0,0,0.8);">
+                        <canvas id="dino-game" width="600" height="400" style="display: block; width: 100%; height: auto; touch-action: none; object-fit: contain; cursor: pointer;"></canvas>
+                        
+                        <div id="dino-overlay" style="position: absolute; inset: 0; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">
+                            <p id="dino-score-display" style="font-family: var(--font-display); font-size: 2.5rem; color: var(--accent); margin-bottom: 1.5rem; letter-spacing: 3px; text-transform: uppercase;">Score: 000</p>
+                            <button id="dino-start-btn" class="toggle-btn" style="border-color: var(--accent); color: var(--text-main); background: rgba(255,255,255,0.05); padding: 0.8rem 2rem;">Initialize Run</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXPERIENCE & LEADERSHIP -->
+        <section>
+            <div class="container">
+                <h2 class="section-title reveal-up"><span class="section-subtitle">01</span>Experience & Leadership</h2>
+                <div class="two-col-grid reveal-up" id="experience-container">
+                    <!-- Javascript will populate this from Firestore -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ENGINEERING PROJECTS -->
+        <section>
+            <div class="container">
+                <h2 class="section-title reveal-up"><span class="section-subtitle">02</span>Engineering / AI</h2>
+                <div class="projects-grid reveal-up" id="projects-container">
+                    <!-- Javascript will populate this from Firestore -->
+                </div>
+            </div>
+        </section>
+
+        <!-- CORE STACK -->
+        <section>
+            <div class="container reveal-up">
+                <h2 class="section-title"><span class="section-subtitle">03</span>Core Stack</h2>
+                <div class="skills-container">
+                    <div class="skill-tag">Python</div><div class="skill-tag">R</div><div class="skill-tag">SQL</div>
+                    <div class="skill-tag">Scikit-learn</div><div class="skill-tag">Pandas</div><div class="skill-tag">NumPy</div>
+                    <div class="skill-tag">OpenCV</div><div class="skill-tag">TensorFlow</div><div class="skill-tag">Keras</div>
+                    <div class="skill-tag">XGBoost</div><div class="skill-tag">Machine Learning</div><div class="skill-tag">Computer Vision</div>
+                    <div class="skill-tag">NLP (RAG)</div><div class="skill-tag">Data Modeling</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EDUCATION & CERTIFICATIONS -->
+        <section>
+            <div class="container">
+                <h2 class="section-title reveal-up"><span class="section-subtitle">04</span>Education & Certifications</h2>
+                <div class="two-col-grid reveal-up">
+                    <div class="glass-card" style="padding: 3rem 2rem;">
+                        <h3 class="project-title" style="margin-bottom: 1.5rem; font-size: 1.4rem;">Academic Background</h3>
+                        <ul class="media-list" id="education-container">
+                            <!-- Javascript will populate this from Firestore -->
+                        </ul>
+                    </div>
+                    <div class="glass-card" style="padding: 3rem 2rem;">
+                        <h3 class="project-title" style="margin-bottom: 1.5rem; font-size: 1.4rem;">Certifications</h3>
+                        <ul class="media-list" id="certifications-container">
+                            <!-- Javascript will populate this from Firestore -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- SIDE B: CREATIVE CANVAS -->
+    <div id="creative-content" class="fade-content hidden">
+        
+        <!-- CREATIVE QUOTE ENGINE -->
+        <div class="quote-container reveal-up">
+            <div class="dynamic-quote-text" id="creative-quote-display">"Loading thoughts..."</div>
+            <div class="dynamic-quote-author" id="creative-quote-author">- Shayan Azmi</div>
+        </div>
+
+        <!-- PHOTOGRAPHY FEED -->
+        <section>
+            <div class="container">
+                <h2 class="section-title reveal-up"><span class="section-subtitle">Visuals</span>Through The Lens</h2>
+                <div class="gallery-grid reveal-up" id="gallery-container">
+                    <!-- Javascript will populate this from Firestore -->
+                </div>
+                <div class="center-btn-container reveal-up">
+                    <button id="show-more-gallery-btn" class="toggle-btn" style="display: none; padding: 0.8rem 2rem; font-size: 0.8rem;">View All Frames</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- MUSIC -->
+        <section>
+            <div class="container">
+                <h2 class="section-title reveal-up"><span class="section-subtitle">Audio</span>The Soundtrack</h2>
+                <div class="two-col-grid reveal-up">
+                    <div class="glass-card" style="padding: 1.5rem;">
+                        <span class="media-meta" style="color: var(--accent); padding: 1rem 1rem 0.5rem 1rem;">Currently Playing</span>
+                        <!-- DYNAMIC SPOTIFY PLAYER -->
+                        <iframe id="live-spotify-player" style="border-radius:12px; background: transparent;" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                    </div>
+                    <div class="glass-card" style="padding: 3rem 2.5rem;">
+                        <h3 class="project-title">Curated Playlists</h3>
+                        <p class="project-desc">A collection of moods, scores, and lyrical masterpieces.</p>
+                        <ul class="media-list">
+                            <li><a href="#" class="media-title" style="border:none">Cinematic Scores Vol. 1</a><span class="media-meta">Spotify Playlist</span></li>
+                            <li><a href="#" class="media-title" style="border:none">Midnight Debugging</a><span class="media-meta">Spotify Playlist</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- POETRY & ARTICLES -->
+        <section>
+            <div class="container">
+                <h2 class="section-title reveal-up"><span class="section-subtitle">Literature</span>The Written Word</h2>
+                <div class="two-col-grid reveal-up">
+                    <div class="glass-card" style="padding: 3rem 2.5rem;">
+                        <h3 class="project-title" style="margin-bottom: 0.5rem;">Poetry & Musings</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.9rem; font-weight: 300;">From my Rekhta collection.</p>
+                        <ul class="media-list" id="poetry-container">
+                            <!-- Javascript will populate this -->
+                        </ul>
+                        <div class="center-btn-container">
+                            <button id="show-more-poetry-btn" class="toggle-btn" style="display: none; margin-top: 1rem; padding: 0.6rem 1.5rem;">View All Poetry</button>
+                        </div>
+                    </div>
+
+                    <div class="glass-card" style="padding: 3rem 2.5rem;">
+                        <h3 class="project-title" style="margin-bottom: 0.5rem;">Currently Reading</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.9rem; font-weight: 300;">Articles, Essays & Books</p>
+                        <ul class="media-list" id="articles-container">
+                             <!-- Javascript will populate this -->
+                        </ul>
+                        <div class="center-btn-container">
+                            <button id="show-more-articles-btn" class="toggle-btn" style="display: none; margin-top: 1rem; padding: 0.6rem 1.5rem;">View All Reads</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- THE FRAME (Videos) -->
+        <section>
+            <div class="container">
+                <h2 class="section-title reveal-up"><span class="section-subtitle">Motion</span>The Frame</h2>
+                <div class="glass-card reveal-up" style="padding: 3rem 2.5rem;">
+                    <h3 class="project-title">Cinema & Watchlist</h3>
+                    <p class="project-desc">Recommended video essays, cinematography breakdowns, and films.</p>
+                    <ul class="media-list" id="videos-container">
+                         <!-- Javascript will populate this -->
+                    </ul>
+                    <div class="center-btn-container">
+                        <button id="show-more-videos-btn" class="toggle-btn" style="display: none; margin-top: 1rem; padding: 0.6rem 1.5rem;">View All Watchlist</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TRAVEL MAP -->
+        <section>
+            <div class="container reveal-up">
+                <h2 class="section-title"><span class="section-subtitle">Exploration</span>The Journey</h2>
+                <p style="color: var(--text-muted); margin-bottom: 2rem; font-weight: 300;">Places explored, and the canvas yet to be expanded.</p>
+                <div class="map-container"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="reveal-up">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h4>PROFESSIONAL</h4>
+                <ul>
+                    <li><a href="https://linkedin.com/in/shayanazmi" target="_blank">LinkedIn</a></li>
+                    <li><a href="https://github.com/shayanazmi" target="_blank">GitHub</a></li>
+                    <li><a href="mailto:shayanazmi2006@gmail.com">Email Me</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>CREATIVE</h4>
+                <ul>
+                    <li><a href="https://instagram.com/letsclicksomephotos" target="_blank">Photography (IG)</a></li>
+                    <li><a href="https://instagram.com/_shayanazmi_" target="_blank">Personal (IG)</a></li>
+                    <li><a href="#" target="_blank">Rekhta Profile</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>MEDIA</h4>
+                <ul>
+                    <li><a href="#" target="_blank">Spotify Profile</a></li>
+                    <li><a href="#" target="_blank">YouTube</a></li>
+                </ul>
+            </div>
+        </div>
+        <a href="mailto:shayanazmi2006@gmail.com" class="huge-contact">Say Hello.</a>
+        
+        <span class="admin-trigger" id="admin-trigger">Admin Access</span>
+    </footer>
+
+    <!-- FIREBASE & LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- INTERSECTION OBSERVER FOR SCROLL ANIMATIONS ---
+        document.addEventListener("DOMContentLoaded", () => {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if(entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+
+            document.querySelectorAll('.reveal-up').forEach(el => observer.observe(el));
+            
+            document.getElementById('alter-ego-toggle').addEventListener('click', () => {
+                setTimeout(() => {
+                    document.querySelectorAll('.reveal-up').forEach(el => observer.observe(el));
+                }, 400);
+            });
+            
+            initEntropyCanvas(); 
+            initTechCanvas();
+        });
+
+        // --- TECH CANVAS LOGIC (Replaces Heavy CSS) ---
+        function initTechCanvas() {
+            const canvas = document.getElementById('falling-pattern-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let particles = [];
+
+            function resize() {
+                width = canvas.parentElement.clientWidth;
+                height = canvas.parentElement.clientHeight;
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = width * dpr;
+                canvas.height = height * dpr;
+                ctx.scale(dpr, dpr);
+                createParticles();
+            }
+
+            function createParticles() {
+                particles = [];
+                // Cap particles dynamically for performance
+                const numParticles = Math.min(150, Math.floor((width * height) / 10000));
+                for(let i=0; i<numParticles; i++) {
+                    particles.push({
+                        x: Math.random() * width,
+                        y: Math.random() * height,
+                        radius: Math.random() * 2 + 1.5,
+                        speed: Math.random() * 1.5 + 0.5
+                    });
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                // Accent color matching the original vibe
+                ctx.fillStyle = '#00e1ff';
+                
+                particles.forEach(p => {
+                    p.y += p.speed;
+                    if(p.y > height + 10) {
+                        p.y = -10;
+                        p.x = Math.random() * width;
+                    }
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                
+                requestAnimationFrame(animate);
+            }
+
+            window.addEventListener('resize', resize);
+            resize();
+            animate();
+        }
+
+        // --- ENTROPY CANVAS LOGIC (Vanilla JS Port) ---
+        function initEntropyCanvas() {
+            const canvas = document.getElementById('entropy-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let width, height, animationId, time = 0;
+            let particles = [];
+
+            function resize() {
+                width = canvas.parentElement.clientWidth;
+                height = canvas.parentElement.clientHeight;
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = width * dpr;
+                canvas.height = height * dpr;
+                ctx.scale(dpr, dpr);
+                createParticles();
+            }
+
+            class Particle {
+                constructor(x, y, order) {
+                    this.x = x; this.y = y;
+                    this.originalX = x; this.originalY = y;
+                    this.size = 2;
+                    this.order = order;
+                    this.velocity = { x: (Math.random() - 0.5)*2, y: (Math.random() - 0.5)*2 };
+                    this.influence = 0;
+                    this.neighbors = [];
+                }
+                update() {
+                    if(this.order) {
+                        const dx = this.originalX - this.x;
+                        const dy = this.originalY - this.y;
+                        const chaosInfluence = {x:0, y:0};
+                        this.neighbors.forEach(neighbor => {
+                            if(!neighbor.order) {
+                                const distance = Math.hypot(this.x - neighbor.x, this.y - neighbor.y);
+                                const strength = Math.max(0, 1 - distance/100);
+                                chaosInfluence.x += neighbor.velocity.x * strength;
+                                chaosInfluence.y += neighbor.velocity.y * strength;
+                                this.influence = Math.max(this.influence, strength);
+                            }
+                        });
+                        this.x += dx * 0.05 * (1 - this.influence) + chaosInfluence.x * this.influence;
+                        this.y += dy * 0.05 * (1 - this.influence) + chaosInfluence.y * this.influence;
+                        this.influence *= 0.99;
+                    } else {
+                        this.velocity.x += (Math.random() - 0.5) * 0.5;
+                        this.velocity.y += (Math.random() - 0.5) * 0.5;
+                        this.velocity.x *= 0.95;
+                        this.velocity.y *= 0.95;
+                        this.x += this.velocity.x;
+                        this.y += this.velocity.y;
+                        if(this.x < width/2 || this.x > width) this.velocity.x *= -1;
+                        if(this.y < 0 || this.y > height) this.velocity.y *= -1;
+                        this.x = Math.max(width/2, Math.min(width, this.x));
+                        this.y = Math.max(0, Math.min(height, this.y));
+                    }
+                }
+                draw(ctx) {
+                    const alpha = this.order ? 0.8 - this.influence * 0.5 : 0.8;
+                    ctx.fillStyle = `rgba(229, 169, 60, ${alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+                    ctx.fill();
+                }
+            }
+
+            function createParticles() {
+                particles = [];
+                const spacing = 45; // Increased spacing for performance
+                let cols = Math.floor(width / spacing);
+                let rows = Math.floor(height / spacing);
+                
+                // Hard cap max bounds to prevent O(N^2) lockups on huge high-res screens
+                if (cols * rows > 350) {
+                    const ratio = Math.sqrt(350 / (cols * rows));
+                    cols = Math.floor(cols * ratio);
+                    rows = Math.floor(rows * ratio);
+                }
+
+                for (let i = 0; i < cols; i++) {
+                    for (let j = 0; j < rows; j++) {
+                        const x = (width / cols) * i + (width / cols) / 2;
+                        const y = (height / rows) * j + (height / rows) / 2;
+                        const order = x < width / 2; 
+                        particles.push(new Particle(x, y, order));
+                    }
+                }
+            }
+
+            function updateNeighbors() {
+                particles.forEach(particle => {
+                    particle.neighbors = particles.filter(other => {
+                        if (other === particle) return false;
+                        // Fast pre-check utilizing Math.abs to avoid intense Math.hypot load
+                        if (Math.abs(particle.x - other.x) > 100 || Math.abs(particle.y - other.y) > 100) return false;
+                        const distance = Math.hypot(particle.x - other.x, particle.y - other.y);
+                        return distance < 100;
+                    });
+                });
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                if (time % 30 === 0) updateNeighbors();
+
+                particles.forEach(particle => {
+                    particle.update();
+                    particle.draw(ctx);
+
+                    particle.neighbors.forEach(neighbor => {
+                        const distance = Math.hypot(particle.x - neighbor.x, particle.y - neighbor.y);
+                        if (distance < 50) {
+                            const alpha = 0.2 * (1 - distance / 50);
+                            ctx.strokeStyle = `rgba(229, 169, 60, ${alpha})`;
+                            ctx.beginPath();
+                            ctx.moveTo(particle.x, particle.y);
+                            ctx.lineTo(neighbor.x, neighbor.y);
+                            ctx.stroke();
+                        }
+                    });
+                });
+
+                ctx.strokeStyle = `rgba(229, 169, 60, 0.3)`;
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(width / 2, 0);
+                ctx.lineTo(width / 2, height);
+                ctx.stroke();
+
+                time++;
+                animationId = requestAnimationFrame(animate);
+            }
+
+            window.addEventListener('resize', resize);
+            resize();
+            animate();
+        }
+
+        let app, auth, db, appId;
+        try {
+            const firebaseConfig = {
+                apiKey: "AIzaSyCROTl9vNoJopw0i0zjfwEWeIEZ2kEtzZo",
+                authDomain: "shayan-portfolio-website.firebaseapp.com",
+                projectId: "shayan-portfolio-website",
+                storageBucket: "shayan-portfolio-website.firebasestorage.app",
+                messagingSenderId: "486161492413",
+                appId: "1:486161492413:web:0e848fced6a117ab640ad4",
+                measurementId: "G-SKCNC8E681"
+            };
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            appId = 'shayan-portfolio-website';
+        } catch(e) { console.error("Firebase init failed", e); }
+
+        // --- LOCAL STATE & DEFAULTS ---
+        let galleryShowingAll = false; const GALLERY_LIMIT = 6;
+        let poetryShowingAll = false; const POETRY_LIMIT = 1;
+        let articlesShowingAll = false; const ARTICLES_LIMIT = 3;
+        let videosShowingAll = false; const VIDEOS_LIMIT = 5;
+
+        let techQuotes = [];
+        let creativeQuotes = [];
+        
+        window.globalManageData = { 
+            projects: [], experience: [], education: [], certifications: [], 
+            gallery: [], poetry: [], articles: [], videos: [], quotes: [] 
+        };
+
+        const defaultProjects = [
+            { id: 'dp1', title: "Olympia Academia", desc: "RAG chatbot using FAISS and Semantic Search with an upcoming XAI UI.", link: "https://github.com/shayanazmi/olympia-academia-ragChatBot", priority: 1 },
+            { id: 'dp2', title: "Face Mask Detection", desc: "Real-time Streamlit AI Dashboard using VGG16 and Haar Cascades (93% accuracy).", link: "https://github.com/shayanazmi/Face-mask-Detection-FInal", priority: 2 }
+        ];
+        
+        const defaultExperience = [
+            { id: 'de1', title: "AI Intern @ C-DAC", desc: "Ranked #1 of 45+ trainees. Led a 4-person team to build a CNN/OpenCV Indian Sign Language model and optimized ML algorithms across 10+ datasets.", meta: "Jun 2025 - Jul 2025 • Patna, Bihar", priority: 1 },
+            { id: 'de2', title: "Data Science Intern @ Codveda", desc: "Developed 12 Scikit-learn ML models and executed time-series trend analysis on data acquired via automated Beautiful Soup web scraping.", meta: "May 2025 - Jul 2025 • Remote", priority: 2 },
+            { id: 'de3', title: "Leader @ Eulim Science Club", desc: "Orchestrated national science events for 1,500+ students and drove digital campaigns yielding 900K+ online engagements.", meta: "Aug 2025 - Present • Christ University", priority: 3 },
+            { id: 'de4', title: "Stage Committee @ ICSCPS 2026", desc: "Directed a 15-member team executing seamless stage logistics and real-time session flows for 15 international speakers.", meta: "Christ University • Delhi NCR", priority: 4 }
+        ];
+
+        const defaultEducation = [
+            { id: 'ded1', title: "B.Sc. Data Science & AI", meta: "Christ University • 3/4 GPA", priority: 1 },
+            { id: 'ded2', title: "Intermediate (12th)", meta: "Al - Hafeez College • 68.6%", priority: 2 },
+            { id: 'ded3', title: "Matriculation (10th)", meta: "St. Karens Secondary • 83.6%", priority: 3 }
+        ];
+
+        const defaultCertifications = [
+            { id: 'dc1', title: "Data Analysis With R", meta: "Google • Scored 90%", priority: 1 },
+            { id: 'dc2', title: "Python for Data Science & A.I.", meta: "IBM • Scored 92.5%", priority: 2 },
+            { id: 'dc3', title: "AI & Machine Learning", meta: "Intel Unnati • Scored 80%", priority: 3 },
+            { id: 'dc4', title: "Product & Brand Management", meta: "IIT Roorkee • Scored 77%", priority: 4 }
+        ];
+
+        const defaultGallery = [
+            { id: 'dg1', url: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=600&q=80', title: 'Cinematography', priority: 1 },
+            { id: 'dg2', url: 'https://images.unsplash.com/photo-1516961642265-531546e84af2?auto=format&fit=crop&w=600&q=80', title: 'Street', priority: 2 }
+        ];
+        const defaultPoetry = [{ id: 'dp1', title: 'An Ode to the Code', type: 'Nazm', content: 'In loops we trust...', link: '#', priority: 1 }];
+        const defaultArticles = [{ id: 'da1', title: 'The Psychology of Human Misjudgment', meta: 'Charlie Munger • Essay', link: '#', priority: 1 }];
+        const defaultVideos = [{ id: 'dv1', title: 'The Art of Color Grading', meta: 'YouTube • Video Essay', link: '#', priority: 1 }];
+        
+        const defaultTechQuotes = [
+            { id: 'dtq1', text: "The art of programming is the art of organizing complexity.", author: "Edsger W. Dijkstra", category: "tech", priority: 1 },
+            { id: 'dtq2', text: "Innovation distinguishes between a leader and a follower.", author: "Steve Jobs", category: "tech", priority: 2 }
+        ];
+        const defaultCreativeQuotes = [
+            { id: 'dcq1', text: "Good design is invisible. Great design is inevitable.", author: "Anonymous", category: "creative", priority: 1 },
+            { id: 'dcq2', text: "A photograph is a secret about a secret. The more it tells you the less you know.", author: "Diane Arbus", category: "creative", priority: 2 }
+        ];
+
+        // --- AUTH & FETCHING ---
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) { await signInWithCustomToken(auth, __initial_auth_token); } 
+                else { await signInAnonymously(auth); }
+            } catch(e) { console.log("Auth skipped"); renderAllDefaults(); }
+        };
+        if(auth) initAuth();
+
+        if(auth) {
+            onAuthStateChanged(auth, (user) => {
+                if (!user) return;
+                
+                // Fetch UI Text (Dual Intros) & Spotify Config
+                onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'ui_content', 'main_intro'), (docSnap) => {
+                    if(docSnap.exists()) {
+                        const d = docSnap.data();
+                        if(d.tech_hook) document.getElementById('ui-tech-hook').innerHTML = d.tech_hook;
+                        if(d.tech_p1) document.getElementById('ui-tech-p1').innerText = d.tech_p1;
+                        if(d.tech_p2) document.getElementById('ui-tech-p2').innerText = d.tech_p2;
+                        if(d.tech_p3) document.getElementById('ui-tech-p3').innerText = d.tech_p3;
+                        if(d.tech_p4) document.getElementById('ui-tech-p4').innerText = d.tech_p4;
+                        
+                        if(d.crea_hook) document.getElementById('ui-crea-hook').innerHTML = d.crea_hook;
+                        if(d.crea_p1) document.getElementById('ui-crea-p1').innerText = d.crea_p1;
+                        if(d.crea_p2) document.getElementById('ui-crea-p2').innerText = d.crea_p2;
+                        if(d.crea_p3) document.getElementById('ui-crea-p3').innerText = d.crea_p3;
+                        if(d.crea_p4) document.getElementById('ui-crea-p4').innerText = d.crea_p4;
+
+                        document.getElementById('admin-tech-hook').value = d.tech_hook || '';
+                        document.getElementById('admin-tech-p1').value = d.tech_p1 || '';
+                        document.getElementById('admin-tech-p2').value = d.tech_p2 || '';
+                        document.getElementById('admin-tech-p3').value = d.tech_p3 || '';
+                        document.getElementById('admin-tech-p4').value = d.tech_p4 || '';
+                        
+                        document.getElementById('admin-crea-hook').value = d.crea_hook || '';
+                        document.getElementById('admin-crea-p1').value = d.crea_p1 || '';
+                        document.getElementById('admin-crea-p2').value = d.crea_p2 || '';
+                        document.getElementById('admin-crea-p3').value = d.crea_p3 || '';
+                        document.getElementById('admin-crea-p4').value = d.crea_p4 || '';
+                    }
+                });
+
+                onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'ui_content', 'spotify'), (docSnap) => {
+                    if(docSnap.exists() && docSnap.data().url) {
+                        document.getElementById('live-spotify-player').src = docSnap.data().url;
+                        document.getElementById('admin-spotify-url').value = docSnap.data().url;
+                    }
+                });
+
+                // Generic Fetcher
+                const syncCollection = (collName, defaultArr, renderFn) => {
+                    onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', collName), (snapshot) => {
+                        const fetched = [];
+                        snapshot.forEach(doc => fetched.push({ id: doc.id, ...doc.data() }));
+                        fetched.sort((a,b) => {
+                            const pA = a.priority ? Number(a.priority) : 999;
+                            const pB = b.priority ? Number(b.priority) : 999;
+                            if(pA !== pB) return pA - pB;
+                            return (b.addedAt || 0) - (a.addedAt || 0);
+                        });
+                        window.globalManageData[collName] = fetched; 
+                        if(document.getElementById('manage-category').value === collName) renderManageList();
+                        renderFn(fetched.length ? fetched : defaultArr);
+                    });
+                };
+
+                syncCollection('projects', defaultProjects, renderProjects);
+                syncCollection('experience', defaultExperience, renderExperience);
+                syncCollection('education', defaultEducation, renderEducation);
+                syncCollection('certifications', defaultCertifications, renderCertifications);
+                syncCollection('gallery', defaultGallery, renderGallery);
+                syncCollection('poetry', defaultPoetry, renderPoetry);
+                syncCollection('articles', defaultArticles, renderArticles);
+                syncCollection('videos', defaultVideos, renderVideos);
+                
+                // Quotes Fetcher
+                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'quotes'), (snapshot) => {
+                    const fetched = [];
+                    snapshot.forEach(doc => fetched.push({ id: doc.id, ...doc.data() }));
+                    window.globalManageData['quotes'] = fetched;
+                    if(document.getElementById('manage-category').value === 'quotes') renderManageList();
+                    
+                    techQuotes = fetched.filter(q => q.category === 'tech');
+                    creativeQuotes = fetched.filter(q => q.category !== 'tech');
+                    
+                    if(techQuotes.length === 0) techQuotes = defaultTechQuotes;
+                    if(creativeQuotes.length === 0) creativeQuotes = defaultCreativeQuotes;
+                    renderQuotes();
+                });
+            });
+        } else {
+            renderAllDefaults();
+        }
+
+        function renderAllDefaults() {
+            renderProjects(defaultProjects); renderExperience(defaultExperience); 
+            renderEducation(defaultEducation); renderCertifications(defaultCertifications);
+            renderGallery(defaultGallery); renderPoetry(defaultPoetry);
+            renderArticles(defaultArticles); renderVideos(defaultVideos); 
+            techQuotes = defaultTechQuotes; creativeQuotes = defaultCreativeQuotes; renderQuotes();
+        }
+
+        // --- RENDER FUNCTIONS ---
+        function renderExperience(items) {
+            const container = document.getElementById('experience-container');
+            container.innerHTML = '';
+            items.forEach(item => {
+                container.innerHTML += `
+                    <div class="glass-card">
+                        <h3 class="project-title">${item.title}</h3>
+                        <p class="project-desc">${item.desc}</p>
+                        <span class="media-meta">${item.meta}</span>
+                    </div>`;
+            });
+        }
+
+        function renderEducation(items) {
+            const container = document.getElementById('education-container');
+            container.innerHTML = '';
+            items.forEach(item => {
+                container.innerHTML += `
+                    <li>
+                        <span class="media-title" style="font-size: 1.3rem; border:none; line-height: 1.2;">${item.title}</span>
+                        <span class="media-meta" style="margin-top: 0.3rem; text-transform: none; font-size: 0.85rem; letter-spacing: 0;">${item.meta}</span>
+                    </li>`;
+            });
+        }
+
+        function renderCertifications(items) {
+            const container = document.getElementById('certifications-container');
+            container.innerHTML = '';
+            items.forEach(item => {
+                container.innerHTML += `
+                    <li>
+                        <span class="media-title" style="font-size: 1.1rem; border:none;">${item.title}</span>
+                        <span class="media-meta" style="text-transform: none; font-size: 0.85rem; letter-spacing: 0;">${item.meta}</span>
+                    </li>`;
+            });
+        }
+
+        function renderProjects(items) {
+            const container = document.getElementById('projects-container');
+            container.innerHTML = '';
+            items.forEach(item => {
+                container.innerHTML += `
+                    <article class="project-card">
+                        <h3 class="project-title">${item.title}</h3>
+                        <p class="project-desc">${item.desc}</p>
+                        <a href="${item.link || '#'}" target="_blank" class="project-link">View Repository</a>
+                    </article>`;
+            });
+        }
+
+        let currentGalleryItems = [];
+        function renderGallery(items) {
+            if(items) currentGalleryItems = items;
+            const container = document.getElementById('gallery-container');
+            const btn = document.getElementById('show-more-gallery-btn');
+            container.innerHTML = '';
+            currentGalleryItems.forEach((item, index) => {
+                const hiddenClass = (index >= GALLERY_LIMIT && !galleryShowingAll) ? 'hidden-item' : '';
+                container.innerHTML += `
+                    <div class="gallery-item ${hiddenClass}">
+                        <img src="${item.url}" alt="${item.title}">
+                        <div class="ig-overlay">${item.title}</div>
+                    </div>`;
+            });
+            if (currentGalleryItems.length > GALLERY_LIMIT) {
+                btn.style.display = 'inline-flex';
+                btn.innerText = galleryShowingAll ? 'View Less' : `View All Frames (${currentGalleryItems.length})`;
+            } else { btn.style.display = 'none'; }
+        }
+
+        document.getElementById('show-more-gallery-btn').addEventListener('click', () => { galleryShowingAll = !galleryShowingAll; renderGallery(); });
+
+        let currentPoetryItems = [];
+        function renderPoetry(items) {
+            if(items) currentPoetryItems = items;
+            const container = document.getElementById('poetry-container');
+            const btn = document.getElementById('show-more-poetry-btn');
+            container.innerHTML = '';
+            currentPoetryItems.forEach((item, index) => {
+                let linkHtml = item.link ? `<a href="${item.link}" target="_blank" class="project-link" style="margin-top: 1rem;">Read on Rekhta</a>` : '';
+                const hiddenClass = (index >= POETRY_LIMIT && !poetryShowingAll) ? 'hidden-item' : '';
+                container.innerHTML += `
+                    <li class="${hiddenClass}">
+                        <span class="media-title">${item.title}</span>
+                        <span class="media-meta" style="margin-bottom:1rem;">${item.type}</span>
+                        <p style="color:var(--text-muted); font-size:0.95rem; line-height:1.6; font-weight:300; white-space: pre-wrap;">${item.content}</p>
+                        ${linkHtml}
+                    </li>`;
+            });
+            if (currentPoetryItems.length > POETRY_LIMIT) {
+                btn.style.display = 'inline-flex';
+                btn.innerText = poetryShowingAll ? 'View Less' : `View All Poetry (${currentPoetryItems.length})`;
+            } else { btn.style.display = 'none'; }
+        }
+
+        let currentArticlesItems = [];
+        function renderArticles(items) {
+            if(items) currentArticlesItems = items;
+            const container = document.getElementById('articles-container');
+            const btn = document.getElementById('show-more-articles-btn');
+            container.innerHTML = '';
+            currentArticlesItems.forEach((item, index) => {
+                const hiddenClass = (index >= ARTICLES_LIMIT && !articlesShowingAll) ? 'hidden-item' : '';
+                container.innerHTML += `<li class="${hiddenClass}"><a href="${item.link||'#'}" target="_blank" class="media-title" style="border:none">${item.title}</a><span class="media-meta">${item.meta}</span></li>`;
+            });
+            if (currentArticlesItems.length > ARTICLES_LIMIT) {
+                btn.style.display = 'inline-flex';
+                btn.innerText = articlesShowingAll ? 'View Less' : `View All Reads (${currentArticlesItems.length})`;
+            } else { btn.style.display = 'none'; }
+        }
+
+        let currentVideosItems = [];
+        function renderVideos(items) {
+            if(items) currentVideosItems = items;
+            const container = document.getElementById('videos-container');
+            const btn = document.getElementById('show-more-videos-btn');
+            container.innerHTML = '';
+            currentVideosItems.forEach((item, index) => {
+                const hiddenClass = (index >= VIDEOS_LIMIT && !videosShowingAll) ? 'hidden-item' : '';
+                container.innerHTML += `<li class="${hiddenClass}"><a href="${item.link||'#'}" target="_blank" class="media-title" style="border:none">${item.title}</a><span class="media-meta">${item.meta}</span></li>`;
+            });
+            if (currentVideosItems.length > VIDEOS_LIMIT) {
+                btn.style.display = 'inline-flex';
+                btn.innerText = videosShowingAll ? 'View Less' : `View All Watchlist (${currentVideosItems.length})`;
+            } else { btn.style.display = 'none'; }
+        }
+
+        document.getElementById('show-more-poetry-btn').addEventListener('click', () => { poetryShowingAll = !poetryShowingAll; renderPoetry(); });
+        document.getElementById('show-more-articles-btn').addEventListener('click', () => { articlesShowingAll = !articlesShowingAll; renderArticles(); });
+        document.getElementById('show-more-videos-btn').addEventListener('click', () => { videosShowingAll = !videosShowingAll; renderVideos(); });
+
+        function renderQuotes() {
+            const techDisp = document.getElementById('tech-quote-display');
+            const techAuth = document.getElementById('tech-quote-author');
+            if(techQuotes.length > 0 && techDisp) {
+                const q = techQuotes[Math.floor(Math.random() * techQuotes.length)];
+                techDisp.innerText = `"${q.text}"`; techAuth.innerText = `- ${q.author}`;
+            }
+            
+            const creaDisp = document.getElementById('creative-quote-display');
+            const creaAuth = document.getElementById('creative-quote-author');
+            if(creativeQuotes.length > 0 && creaDisp) {
+                const q = creativeQuotes[Math.floor(Math.random() * creativeQuotes.length)];
+                creaDisp.innerText = `"${q.text}"`; creaAuth.innerText = `- ${q.author}`;
+            }
+        }
+
+        // --- COMPRESSION UTILS ---
+        function compressImage(file, maxSize = 800) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = event => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width; let height = img.height;
+                        if (width > height) { if (width > maxSize) { height *= maxSize / width; width = maxSize; } } 
+                        else { if (height > maxSize) { width *= maxSize / height; height = maxSize; } }
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.8));
+                    };
+                    img.onerror = reject;
+                };
+                reader.onerror = reject;
+            });
+        }
+
+        function extractThumbnailFromUrl(url) {
+            const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+            if (ytMatch && ytMatch[1]) return `https://img.youtube.com/vi/${ytMatch[1]}/maxresdefault.jpg`;
+            return url; 
+        }
+
+        // --- ADMIN CMS PANEL LOGIC ---
+        const adminPanel = document.getElementById('admin-panel');
+        const passcodeModal = document.getElementById('passcode-modal');
+        const passcodeInput = document.getElementById('passcode-input');
+        const passcodeError = document.getElementById('passcode-error');
+        const togglePassVis = document.getElementById('toggle-pass-vis');
+        const forgotPassBtn = document.getElementById('forgot-pass-btn');
+        const aiRecoverySteps = document.getElementById('ai-recovery-steps');
+
+        togglePassVis.addEventListener('click', () => {
+            if (passcodeInput.type === 'password') {
+                passcodeInput.type = 'text'; togglePassVis.innerText = 'Hide';
+            } else {
+                passcodeInput.type = 'password'; togglePassVis.innerText = 'Show';
+            }
+        });
+
+        forgotPassBtn.addEventListener('click', () => {
+            aiRecoverySteps.style.display = 'block'; passcodeError.style.display = 'none';
+        });
+
+        document.getElementById('admin-trigger').addEventListener('click', () => {
+            passcodeModal.style.display = 'flex'; passcodeInput.value = ''; 
+            passcodeInput.type = 'password'; togglePassVis.innerText = 'Show';
+            passcodeError.style.display = 'none'; aiRecoverySteps.style.display = 'none';
+            passcodeInput.focus();
+        });
+
+        document.getElementById('close-passcode').addEventListener('click', () => { passcodeModal.style.display = 'none'; });
+
+        document.getElementById('passcode-submit').addEventListener('click', () => {
+            if(passcodeInput.value === 'shayan2026') {
+                passcodeModal.style.display = 'none'; adminPanel.style.display = 'flex';
+            } else { passcodeError.style.display = 'block'; aiRecoverySteps.style.display = 'none'; }
+        });
+
+        document.getElementById('close-admin').addEventListener('click', () => { adminPanel.style.display = 'none'; });
+
+        document.querySelectorAll('.admin-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.admin-form').forEach(f => f.classList.remove('active'));
+                e.target.classList.add('active');
+                document.getElementById(e.target.dataset.target).classList.add('active');
+                if(e.target.dataset.target === 'form-manage') renderManageList(); 
+            });
+        });
+
+        function showStatus(msg) {
+            const s = document.getElementById('admin-status');
+            s.innerText = msg; setTimeout(() => s.innerText = '', 3000);
+        }
+
+        async function saveItem(collectionName, dataObj, clearElements) {
+            if(!auth || !auth.currentUser) return showStatus("System disconnected. Data will not save.");
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', collectionName), { ...dataObj, addedAt: Date.now() });
+                clearElements.forEach(el => { if(el) el.value = ''; });
+                showStatus("Saved successfully!");
+            } catch(e) { console.error(e); showStatus("Failed to save."); }
+        }
+
+        // --- SAVE BUTTONS ---
+        document.getElementById('save-ui-btn').addEventListener('click', async () => {
+            if(!auth || !auth.currentUser) return showStatus("System disconnected. Data will not save.");
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'ui_content', 'main_intro'), { 
+                    tech_hook: document.getElementById('admin-tech-hook').value,
+                    tech_p1: document.getElementById('admin-tech-p1').value,
+                    tech_p2: document.getElementById('admin-tech-p2').value,
+                    tech_p3: document.getElementById('admin-tech-p3').value,
+                    tech_p4: document.getElementById('admin-tech-p4').value,
+                    
+                    crea_hook: document.getElementById('admin-crea-hook').value,
+                    crea_p1: document.getElementById('admin-crea-p1').value,
+                    crea_p2: document.getElementById('admin-crea-p2').value,
+                    crea_p3: document.getElementById('admin-crea-p3').value,
+                    crea_p4: document.getElementById('admin-crea-p4').value
+                }, { merge: true });
+                showStatus("Both introductions updated successfully!");
+            } catch(e) { console.error(e); showStatus("Failed to save UI text."); }
+        });
+
+        document.getElementById('save-spotify-btn').addEventListener('click', async () => {
+            if(!auth || !auth.currentUser) return showStatus("System disconnected.");
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'ui_content', 'spotify'), { 
+                    url: document.getElementById('admin-spotify-url').value
+                }, { merge: true });
+                showStatus("Spotify Player updated successfully!");
+            } catch(e) { console.error(e); showStatus("Failed to save Spotify URL."); }
+        });
+
+        document.getElementById('save-proj-btn').addEventListener('click', () => {
+            const prio = document.getElementById('admin-proj-priority'); const t = document.getElementById('admin-proj-title'); 
+            const d = document.getElementById('admin-proj-desc'); const l = document.getElementById('admin-proj-link');
+            if(t.value) saveItem('projects', { priority: prio.value, title: t.value, desc: d.value, link: l.value }, [prio, t, d, l]);
+        });
+
+        document.getElementById('save-exp-btn').addEventListener('click', () => {
+            const p = document.getElementById('admin-exp-priority'); const t = document.getElementById('admin-exp-title');
+            const d = document.getElementById('admin-exp-desc'); const m = document.getElementById('admin-exp-meta');
+            if(t.value) saveItem('experience', { priority: p.value, title: t.value, desc: d.value, meta: m.value }, [p, t, d, m]);
+        });
+
+        document.getElementById('save-edu-btn').addEventListener('click', () => {
+            const p = document.getElementById('admin-edu-priority'); const t = document.getElementById('admin-edu-title');
+            const m = document.getElementById('admin-edu-meta');
+            if(t.value) saveItem('education', { priority: p.value, title: t.value, meta: m.value }, [p, t, m]);
+        });
+
+        document.getElementById('save-cert-btn').addEventListener('click', () => {
+            const p = document.getElementById('admin-cert-priority'); const t = document.getElementById('admin-cert-title');
+            const m = document.getElementById('admin-cert-meta');
+            if(t.value) saveItem('certifications', { priority: p.value, title: t.value, meta: m.value }, [p, t, m]);
+        });
+
+        document.getElementById('save-photo-btn').addEventListener('click', async () => {
+            if(!auth || !auth.currentUser) return showStatus("System disconnected.");
+            const prio = document.getElementById('admin-img-priority');
+            const fileInput = document.getElementById('admin-img-file');
+            const urlInput = document.getElementById('admin-img-url');
+            const titleInput = document.getElementById('admin-img-title');
+            
+            let finalUrl = ""; showStatus("Processing image...");
+            try {
+                if (fileInput.files && fileInput.files[0]) { finalUrl = await compressImage(fileInput.files[0]); } 
+                else if (urlInput.value) { finalUrl = extractThumbnailFromUrl(urlInput.value); } 
+                else { return showStatus("Please select a file or enter a URL."); }
+                
+                await saveItem('gallery', { priority: prio.value, url: finalUrl, title: titleInput.value }, [prio, fileInput, urlInput, titleInput]);
+            } catch(e) { console.error(e); showStatus("Error processing image."); }
+        });
+
+        document.getElementById('save-poem-btn').addEventListener('click', () => {
+            const prio = document.getElementById('admin-poem-priority'); const t = document.getElementById('admin-poem-title'); 
+            const type = document.getElementById('admin-poem-type'); const content = document.getElementById('admin-poem-content');
+            const link = document.getElementById('admin-poem-link');
+            if(t.value) saveItem('poetry', { priority: prio.value, title: t.value, type: type.value, content: content.value, link: link.value }, [prio, t, type, content, link]);
+        });
+
+        document.getElementById('save-art-btn').addEventListener('click', () => {
+            const prio = document.getElementById('admin-art-priority'); const t = document.getElementById('admin-art-title'); 
+            const m = document.getElementById('admin-art-meta'); const l = document.getElementById('admin-art-link');
+            if(t.value) saveItem('articles', { priority: prio.value, title: t.value, meta: m.value, link: l.value }, [prio, t, m, l]);
+        });
+
+        document.getElementById('save-vid-btn').addEventListener('click', () => {
+            const prio = document.getElementById('admin-vid-priority'); const t = document.getElementById('admin-vid-title'); 
+            const m = document.getElementById('admin-vid-meta'); const l = document.getElementById('admin-vid-link');
+            if(t.value) saveItem('videos', { priority: prio.value, title: t.value, meta: m.value, link: l.value }, [prio, t, m, l]);
+        });
+
+        document.getElementById('save-quote-btn').addEventListener('click', () => {
+            const c = document.getElementById('admin-quote-category');
+            const t = document.getElementById('admin-quote-text'); const a = document.getElementById('admin-quote-author');
+            if(t.value) saveItem('quotes', { category: c.value, text: t.value, author: a.value }, [t, a]);
+        });
+
+        // --- MANAGE / DELETE LOGIC ---
+        document.getElementById('manage-category').addEventListener('change', renderManageList);
+
+        function renderManageList() {
+            const category = document.getElementById('manage-category').value;
+            const items = window.globalManageData[category] || [];
+            const container = document.getElementById('manage-items-container');
+            container.innerHTML = '';
+            
+            if(items.length === 0) {
+                container.innerHTML = '<p style="color:var(--text-muted); font-size:0.9rem;">No items found in this section.</p>';
+                return;
+            }
+
+            items.forEach(item => {
+                let displayText = item.title || item.text || 'Item';
+                if(displayText.length > 40) displayText = displayText.substring(0, 40) + '...';
+                let prioText = item.priority ? `(Prio: ${item.priority})` : '';
+                
+                let metaText = (category === 'quotes' && item.category) ? `[${item.category.toUpperCase()}] ` : '';
+
+                container.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #222; padding-bottom:10px;">
+                        <div style="display:flex; flex-direction:column;">
+                            <span style="font-family:var(--font-body); font-size:0.95rem;">${metaText}${displayText} ${prioText}</span>
+                        </div>
+                        <button class="admin-btn-delete" onclick="window.deleteItem('${category}', '${item.id}')">Delete</button>
+                    </div>`;
+            });
+        }
+
+        window.deleteItem = async function(category, docId) {
+            if(!auth || !auth.currentUser) return alert("System disconnected.");
+            if(!confirm("Are you sure you want to permanently delete this item?")) return;
+            
+            try {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', category, docId));
+                showStatus("Item successfully deleted!");
+            } catch(e) {
+                console.error(e);
+                showStatus("Failed to delete item.");
+            }
+        };
+
+        // --- ALTER EGO TOGGLE LOGIC (WITH DUAL INTROS & BG SWAP) ---
+        const toggleBtn = document.getElementById('alter-ego-toggle');
+        const techContent = document.getElementById('tech-content');
+        const creativeContent = document.getElementById('creative-content');
+        
+        const techHero = document.getElementById('tech-hero-section');
+        const creaHero = document.getElementById('creative-hero-section');
+        
+        const bgTech = document.getElementById('bg-tech');
+        const bgCreative = document.getElementById('bg-creative');
+
+        toggleBtn.addEventListener('click', () => {
+            const isCurrentlyTech = !document.body.classList.contains('creative-mode');
+            
+            if(isCurrentlyTech) {
+                techContent.style.opacity = '0';
+                techHero.style.opacity = '0';
+                bgTech.style.opacity = '0';
+            } else {
+                creativeContent.style.opacity = '0';
+                creaHero.style.opacity = '0';
+                bgCreative.style.opacity = '0';
+            }
+            
+            setTimeout(() => {
+                document.body.classList.toggle('creative-mode');
+                
+                techContent.classList.toggle('hidden');
+                creativeContent.classList.toggle('hidden');
+                techHero.classList.toggle('hidden');
+                creaHero.classList.toggle('hidden');
+                
+                setTimeout(() => {
+                    if(isCurrentlyTech) {
+                        creativeContent.style.opacity = '1';
+                        creaHero.style.opacity = '1';
+                        bgCreative.style.opacity = '0.7'; 
+                    } else {
+                        techContent.style.opacity = '1';
+                        techHero.style.opacity = '1';
+                        bgTech.style.opacity = '0.7'; 
+                    }
+                }, 50);
+                
+                toggleBtn.innerHTML = document.body.classList.contains('creative-mode') ? "View: Technical Lens" : "View: Creative Lens";
+            }, 400); 
+        });
+
+        // --- CYBER DINO RUN GAME LOGIC ---
+        const gameCanvas = document.getElementById('dino-game');
+        const gameCtx = gameCanvas.getContext('2d');
+        const startBtn = document.getElementById('dino-start-btn');
+        const overlay = document.getElementById('dino-overlay');
+        const scoreDisplay = document.getElementById('dino-score-display');
+
+        let dinoY = 300;
+        let dinoVelocity = 0;
+        const gravity = 0.6;
+        const jumpPower = -11.5;
+        const groundY = 320;
+        let obstacles = [];
+        let score = 0;
+        let gameInterval;
+        let isGameOver = false;
+        let frameCount = 0;
+        let gameSpeed = 6;
+
+        startBtn.addEventListener('click', startGame);
+
+        function startGame() {
+            dinoY = groundY;
+            dinoVelocity = 0;
+            obstacles = [];
+            score = 0;
+            frameCount = 0;
+            gameSpeed = 6;
+            isGameOver = false;
+            scoreDisplay.innerText = `Score: 000`;
+            overlay.style.display = 'none';
+            if(gameInterval) clearInterval(gameInterval);
+            gameInterval = setInterval(mainLoop, 1000/60); 
+        }
+
+        function mainLoop() {
+            if (isGameOver) {
+                overlay.style.display = 'flex';
+                scoreDisplay.innerText = `System Halted. Score: ${Math.floor(score).toString().padStart(3, '0')}`;
+                startBtn.innerText = 'Reboot Sequence';
+                clearInterval(gameInterval);
+                return;
+            }
+            updateGame();
+            drawGame();
+        }
+
+        function updateGame() {
+            frameCount++;
+            score += 0.1; 
+            if (frameCount % 600 === 0) gameSpeed += 0.5; 
+
+            dinoVelocity += gravity;
+            dinoY += dinoVelocity;
+            if (dinoY >= groundY) {
+                dinoY = groundY;
+                dinoVelocity = 0;
+            }
+
+            if (frameCount % Math.max(40, Math.floor(100 - gameSpeed * 2)) === 0) {
+                let w = 15 + Math.random() * 15;
+                let h = 30 + Math.random() * 30;
+                let y = groundY + 20 - h; 
+                
+                if (Math.random() > 0.85) {
+                    y = groundY - 40 - Math.random() * 30;
+                    h = 15; w = 30;
+                }
+                obstacles.push({x: gameCanvas.width, y: y, w: w, h: h});
+            }
+
+            for (let i = 0; i < obstacles.length; i++) {
+                obstacles[i].x -= gameSpeed;
+            }
+            obstacles = obstacles.filter(ob => ob.x + ob.w > 0);
+
+            const dx = 100;
+            const hitX = dx - 10; 
+            const hitW = 30;
+            const hitY = dinoY - 20;
+            const hitH = 35;
+
+            for (let i = 0; i < obstacles.length; i++) {
+                let ob = obstacles[i];
+                if (hitX < ob.x + ob.w && hitX + hitW > ob.x && hitY < ob.y + ob.h && hitY + hitH > ob.y) {
+                    isGameOver = true;
+                }
+            }
+        }
+
+        function drawGame() {
+            gameCtx.fillStyle = '#010101';
+            gameCtx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+            
+            gameCtx.strokeStyle = 'rgba(41, 151, 255, 0.05)';
+            gameCtx.lineWidth = 1;
+            gameCtx.beginPath();
+            let offset = -(frameCount * gameSpeed) % 40;
+            for(let i=offset; i<=gameCanvas.width; i+=40) { gameCtx.moveTo(i, 0); gameCtx.lineTo(i, gameCanvas.height); }
+            for(let i=0; i<=gameCanvas.height; i+=40) { gameCtx.moveTo(0, i); gameCtx.lineTo(gameCanvas.width, i); }
+            gameCtx.stroke();
+
+            gameCtx.strokeStyle = '#2997ff';
+            gameCtx.lineWidth = 2;
+            gameCtx.shadowBlur = 10;
+            gameCtx.shadowColor = '#2997ff';
+            gameCtx.beginPath();
+            gameCtx.moveTo(0, groundY + 20);
+            gameCtx.lineTo(gameCanvas.width, groundY + 20);
+            gameCtx.stroke();
+            gameCtx.shadowBlur = 0;
+
+            gameCtx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+            gameCtx.font = "bold 80px var(--font-body)";
+            gameCtx.fillText(Math.floor(score).toString().padStart(3, '0'), gameCanvas.width - 200, 100);
+
+            obstacles.forEach(ob => {
+                gameCtx.fillStyle = 'rgba(255, 51, 51, 0.2)';
+                gameCtx.strokeStyle = '#ff3333';
+                gameCtx.lineWidth = 2;
+                gameCtx.shadowBlur = 10;
+                gameCtx.shadowColor = '#ff3333';
+                gameCtx.fillRect(ob.x, ob.y, ob.w, ob.h);
+                gameCtx.strokeRect(ob.x, ob.y, ob.w, ob.h);
+                
+                gameCtx.beginPath();
+                gameCtx.moveTo(ob.x, ob.y + ob.h/2);
+                gameCtx.lineTo(ob.x + ob.w, ob.y + ob.h/2);
+                gameCtx.stroke();
+                gameCtx.shadowBlur = 0;
+            });
+
+            const dx = 100;
+            gameCtx.save();
+            gameCtx.translate(dx, dinoY);
+
+            gameCtx.shadowBlur = 15;
+            gameCtx.shadowColor = '#E5A93C';
+            gameCtx.fillStyle = '#E5A93C';
+
+            gameCtx.fillRect(4, -26, 18, 14);
+            gameCtx.fillRect(22, -26, 10, 8);
+            gameCtx.fillRect(22, -14, 8, 4);
+
+            gameCtx.fillStyle = '#010101';
+            gameCtx.shadowBlur = 0;
+            gameCtx.fillRect(10, -22, 4, 4);
+
+            gameCtx.fillStyle = '#E5A93C';
+            gameCtx.shadowBlur = 15;
+            gameCtx.fillRect(-6, -12, 16, 22);
+            gameCtx.fillRect(-12, -6, 6, 14);
+            gameCtx.fillRect(-18, -10, 6, 10);
+            gameCtx.fillRect(-24, -14, 6, 8);
+            
+            gameCtx.fillRect(10, -4, 8, 4);
+            gameCtx.fillRect(14, 0, 4, 4);
+
+            const isRunning = dinoY === groundY;
+            const runFrame = isRunning ? Math.floor(frameCount / 6) % 2 : 0;
+            
+            if (!isRunning) {
+                gameCtx.fillRect(-6, 10, 6, 6);
+                gameCtx.fillRect(4, 10, 6, 6);
+            } else if (runFrame === 0) {
+                gameCtx.fillRect(-6, 10, 6, 10); 
+                gameCtx.fillRect(-2, 16, 4, 4); 
+                gameCtx.fillRect(4, 10, 6, 4); 
+            } else {
+                gameCtx.fillRect(-6, 10, 6, 4); 
+                gameCtx.fillRect(4, 10, 6, 10); 
+                gameCtx.fillRect(8, 16, 4, 4); 
+            }
+
+            gameCtx.restore();
+        }
+
+        function jump() {
+            if(overlay.style.display !== 'none') return;
+            if (dinoY >= groundY) { 
+                dinoVelocity = jumpPower;
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowUp') {
+                e.preventDefault();
+                jump();
+            }
+        });
+
+        gameCanvas.addEventListener('mousedown', jump);
+        gameCanvas.addEventListener('touchstart', (e) => {
+            if(e.target === gameCanvas) {
+                e.preventDefault();
+                jump();
+            }
+        }, {passive: false});
+
+    </script>
+</body>
+</html>
