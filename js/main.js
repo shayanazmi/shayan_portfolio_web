@@ -1,4 +1,4 @@
-import { app, auth, db, appId, onSnapshot, collection, doc } from "./firebase-config.js";
+import { db, appId, onSnapshot, collection, doc, dataPath, docPath } from "./firebase-config.js";
 
 // --- INTERSECTION OBSERVER FOR SCROLL ANIMATIONS ---
         document.addEventListener("DOMContentLoaded", () => {
@@ -284,7 +284,7 @@ import { app, auth, db, appId, onSnapshot, collection, doc } from "./firebase-co
             if(!db) { renderAllDefaults(); return; }
             
             // 1. Fetch UI Text (Dual Intros)
-            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'ui_content', 'main_intro'), (docSnap) => {
+            onSnapshot(docPath('ui_content', 'main_intro'), (docSnap) => {
                 if(docSnap.exists()) {
                     const d = docSnap.data();
                     const fields = ['tech_hook','tech_p1','tech_p2','tech_p3','tech_p4','crea_hook','crea_p1','crea_p2','crea_p3','crea_p4'];
@@ -298,7 +298,7 @@ import { app, auth, db, appId, onSnapshot, collection, doc } from "./firebase-co
             }, (err) => { console.warn("Failed fetching intro:", err); renderAllDefaults(); });
 
             // 2. Fetch Spotify Global Player
-            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'ui_content', 'spotify'), (docSnap) => {
+            onSnapshot(docPath('ui_content', 'spotify'), (docSnap) => {
                 if(docSnap.exists() && docSnap.data().url) {
                     const url = docSnap.data().url;
                     document.getElementById('live-spotify-player').src = url;
@@ -309,7 +309,7 @@ import { app, auth, db, appId, onSnapshot, collection, doc } from "./firebase-co
 
             // 3. Generic Collection Syncer
             const syncCollection = (collName, defaultArr, renderFn) => {
-                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', collName), (snapshot) => {
+                onSnapshot(dataPath(collName), (snapshot) => {
                     const fetched = [];
                     snapshot.forEach(doc => fetched.push({ id: doc.id, ...doc.data() }));
                     
@@ -343,7 +343,7 @@ import { app, auth, db, appId, onSnapshot, collection, doc } from "./firebase-co
             syncCollection('playlists', defaultPlaylists, renderPlaylists);
 
             // Quotes
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'quotes'), (snapshot) => {
+            onSnapshot(dataPath('quotes'), (snapshot) => {
                 const fetched = [];
                 snapshot.forEach(doc => fetched.push({ id: doc.id, ...doc.data() }));
                 window.globalManageData['quotes'] = fetched;

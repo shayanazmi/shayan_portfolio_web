@@ -1,4 +1,4 @@
-import { app, auth, db, appId, signInWithEmailAndPassword, onAuthStateChanged, collection, addDoc, onSnapshot, doc, setDoc, deleteDoc } from "./firebase-config.js";
+import { auth, db, appId, onAuthStateChanged, adminLogin, collection, addDoc, doc, setDoc, deleteDoc, dataPath, docPath } from "./firebase-config.js";
 
 // --- AUTH LOGIC (ADMIN ONLY) ---
         if(auth) {
@@ -84,7 +84,7 @@ import { app, auth, db, appId, signInWithEmailAndPassword, onAuthStateChanged, c
         document.getElementById('passcode-submit').addEventListener('click', async () => {
             passcodeError.style.display = 'none';
             try {
-                await signInWithEmailAndPassword(auth, emailInput.value.trim(), passcodeInput.value);
+                await adminLogin(emailInput.value.trim(), passcodeInput.value);
                 passcodeModal.style.display = 'none'; adminPanel.style.display = 'flex';
                 showStatus("Logged in as Admin!");
             } catch(e) { 
@@ -117,7 +117,7 @@ import { app, auth, db, appId, signInWithEmailAndPassword, onAuthStateChanged, c
 
         async function saveItem(collectionName, dataObj, clearElements) {
             try {
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', collectionName), { ...dataObj, addedAt: Date.now() });
+                await addDoc(dataPath(collectionName), { ...dataObj, addedAt: Date.now() });
                 clearElements.forEach(el => { if(el) el.value = ''; });
                 showStatus("Saved successfully!");
             } catch(e) { console.error(e); showStatus("Failed to save.", true); }
@@ -126,7 +126,7 @@ import { app, auth, db, appId, signInWithEmailAndPassword, onAuthStateChanged, c
         // --- SAVE BUTTONS ---
         document.getElementById('save-ui-btn').addEventListener('click', async () => {
             try {
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'ui_content', 'main_intro'), { 
+                await setDoc(docPath('ui_content', 'main_intro'), { 
                     tech_hook: document.getElementById('admin-tech-hook').value,
                     tech_p1: document.getElementById('admin-tech-p1').value,
                     tech_p2: document.getElementById('admin-tech-p2').value,
@@ -153,7 +153,7 @@ import { app, auth, db, appId, signInWithEmailAndPassword, onAuthStateChanged, c
             if(!inputUrl || !inputUrl.includes('spotify.com')) return showStatus('Please enter a valid Spotify URL.', true);
             
             try {
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'ui_content', 'spotify'), { url: inputUrl }, { merge: true });
+                await setDoc(docPath('ui_content', 'spotify'), { url: inputUrl }, { merge: true });
                 showStatus('Currently Playing updated!');
             } catch(e) { showStatus('Failed to update player.', true); }
         });
@@ -288,7 +288,7 @@ import { app, auth, db, appId, signInWithEmailAndPassword, onAuthStateChanged, c
         window.deleteItem = async function(category, docId) {
             if(!confirm("Are you sure you want to permanently delete this item?")) return;
             try {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', category, docId));
+                await deleteDoc(docPath(category, docId));
                 showStatus("Item successfully deleted!");
             } catch(e) { console.error(e); showStatus("Failed to delete item.", true); }
         };
