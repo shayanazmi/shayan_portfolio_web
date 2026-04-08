@@ -191,12 +191,6 @@ Handles all Firebase setup and exports helpers used across the app.
 | Colors & fonts | `css/style.css` — `:root` variables |
 | Mode names & nav | `index.html` — `.nav-logo`, toggle button |
 
----
-
-## 🔐 Security Note
-
-Never commit your Firebase API key to a **public** repo without restricting it.
-In the Firebase Console → Project Settings → API restrictions, restrict your key to your hosting domain only.
 
 ---
 
