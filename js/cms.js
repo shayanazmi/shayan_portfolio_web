@@ -1,296 +1,521 @@
-import { auth, db, appId, onAuthStateChanged, adminLogin, collection, addDoc, doc, setDoc, deleteDoc, dataPath, docPath } from "./firebase-config.js";
+import {
+    auth, db, onAuthStateChanged,
+    adminLogin, adminLogout,
+    addDoc, setDoc, deleteDoc,
+    dataPath, docPath, uiDocPath
+} from "./firebase-config.js";
 
-// --- AUTH LOGIC (ADMIN ONLY) ---
-        if(auth) {
-            onAuthStateChanged(auth, (user) => {
-                const dot = document.getElementById('cms-auth-dot');
-                const lbl = document.getElementById('cms-auth-label');
+// ─────────────────────────────────────────────────────────────────────────────
+// IMAGE COMPRESSION — industry-standard adaptive pipeline
+// ─────────────────────────────────────────────────────────────────────────────
 
-                if (!user) {
-                    if(dot) dot.className = 'offline';
-                    if(lbl) lbl.innerText = 'Offline';
-                } else {
-                    if(dot) dot.className = 'online';
-                    if(lbl) lbl.innerText = 'Connected';
-                }
-            });
+/**
+ * Compress an image file to a target max dimension and quality.
+ * Outputs WebP where supported, JPEG as fallback.
+ * Returns a base64 data URL.
+ *
+ * @param {File}   file       - Raw File from <input type="file">
+ * @param {Object} opts
+ * @param {number} opts.maxDim    - Max width or height in px   (default: 1200)
+ * @param {number} opts.quality   - Encoder quality 0–1         (default: 0.82)
+ * @param {number} opts.maxBytes  - Target output size in bytes (default: 300 KB)
+ * @returns {Promise<string>} base64 data URL
+ */
+async function compressImage(file, {
+    maxDim   = 1200,
+    quality  = 0.82,
+    maxBytes = 300 * 1024   // 300 KB
+} = {}) {
+    // 1. Decode the image
+    const bitmap = await createImageBitmap(file);
+    let { width, height } = bitmap;
+
+    // 2. Resize proportionally to fit within maxDim
+    if (width > maxDim || height > maxDim) {
+        const scale = maxDim / Math.max(width, height);
+        width  = Math.round(width  * scale);
+        height = Math.round(height * scale);
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width  = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(bitmap, 0, 0, width, height);
+    bitmap.close();
+
+    // 3. Prefer WebP, fall back to JPEG
+    const supportsWebP = canvas.toDataURL('image/webp').startsWith('data:image/webp');
+    const mimeType     = supportsWebP ? 'image/webp' : 'image/jpeg';
+
+    // 4. Adaptive quality loop: reduce if still over maxBytes
+    let q    = quality;
+    let data = canvas.toDataURL(mimeType, q);
+
+    while (q > 0.40) {
+        const byteCount = Math.round((data.length - data.indexOf(',') - 1) * 0.75);
+        if (byteCount <= maxBytes) break;
+        q   -= 0.08;
+        data = canvas.toDataURL(mimeType, q);
+    }
+
+    return data;
+}
+
+/**
+ * Extract a YouTube thumbnail from any YT URL format.
+ * Falls back to the original URL if not a YT link.
+ */
+function extractYouTubeThumbnail(url) {
+    const match = url.match(
+        /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/
+    );
+    return match ? `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg` : url;
+}
+
+/**
+ * Normalise a raw Spotify URL (or embed snippet) to an embeddable URL.
+ */
+function toSpotifyEmbed(raw) {
+    const srcMatch = raw.match(/src="([^"]+)"/);
+    if (srcMatch) raw = srcMatch[1];
+    const parts = raw.match(/open\.spotify\.com\/(track|playlist|album|show|episode|artist)\/([a-zA-Z0-9]+)/);
+    if (parts && !raw.includes('/embed/')) {
+        return `https://open.spotify.com/embed/${parts[1]}/${parts[2]}?utm_source=generator&theme=0`;
+    }
+    return raw;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATUS HELPER
+// ─────────────────────────────────────────────────────────────────────────────
+function showStatus(msg, isError = false) {
+    const el = document.getElementById('admin-status');
+    if (!el) return;
+    el.textContent = msg;
+    el.className   = 'status-msg ' + (isError ? 'error' : 'success');
+    clearTimeout(el._timer);
+    el._timer = setTimeout(() => { el.textContent = ''; el.className = 'status-msg'; }, 3500);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GENERIC SAVE / DELETE
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Add a new document to a CMS collection.
+ * Automatically stamps addedAt and clears the form inputs on success.
+ */
+async function saveItem(collName, data, inputsToClear = []) {
+    try {
+        await addDoc(dataPath(collName), { ...data, addedAt: Date.now() });
+        inputsToClear.forEach(el => { if (el) el.value = ''; });
+        showStatus('Saved successfully!');
+    } catch (e) {
+        console.error('[CMS] saveItem error:', e);
+        showStatus('Failed to save. Check Firestore rules.', true);
+    }
+}
+
+/**
+ * Overwrite a singleton UI document (merge: true so unset fields are preserved).
+ */
+async function saveUiDoc(docId, data) {
+    try {
+        await setDoc(uiDocPath(docId), data, { merge: true });
+        showStatus('Saved!');
+    } catch (e) {
+        console.error('[CMS] saveUiDoc error:', e);
+        showStatus('Failed to save.', true);
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CMS INIT — runs once the DOM is ready
+// ─────────────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', initCMS);
+
+function initCMS() {
+
+    // ── Auth state indicator ──────────────────────────────────────────────────
+    onAuthStateChanged(auth, (user) => {
+        const dot = document.getElementById('cms-auth-dot');
+        const lbl = document.getElementById('cms-auth-label');
+        const logoutBtn = document.getElementById('admin-logout-btn');
+
+        if (user) {
+            if (dot) dot.className = 'online';
+            if (lbl) lbl.textContent = 'Connected';
+            if (logoutBtn) logoutBtn.style.display = 'inline-flex';
         } else {
-            renderAllDefaults();
+            if (dot) dot.className = 'offline';
+            if (lbl) lbl.textContent = 'Offline';
+            if (logoutBtn) logoutBtn.style.display = 'none';
+            const panel = document.getElementById('admin-panel');
+            if (panel) panel.style.display = 'none';
         }
+    });
 
-        function renderAllDefaults() {
-            renderProjects(defaultProjects); renderExperience(defaultExperience); 
-            renderEducation(defaultEducation); renderCertifications(defaultCertifications);
-            renderGallery(defaultGallery); renderPoetry(defaultPoetry);
-            renderArticles(defaultArticles); renderVideos(defaultVideos);
-            renderPlaylists(defaultPlaylists);
-            techQuotes = defaultTechQuotes; creativeQuotes = defaultCreativeQuotes; renderQuotes();
+    // ── Login modal ───────────────────────────────────────────────────────────
+    const passcodeModal  = document.getElementById('passcode-modal');
+    const emailInput     = document.getElementById('admin-email');
+    const passInput      = document.getElementById('admin-password');
+    const passError      = document.getElementById('passcode-error');
+    const togglePassBtn  = document.getElementById('toggle-pass-vis');
+
+    togglePassBtn?.addEventListener('click', () => {
+        const isHidden = passInput.type === 'password';
+        passInput.type = isHidden ? 'text' : 'password';
+        togglePassBtn.textContent = isHidden ? 'Hide' : 'Show';
+    });
+
+    document.getElementById('admin-trigger')?.addEventListener('click', () => {
+        passcodeModal.style.display = 'flex';
+        passInput.value = '';
+        emailInput.value = '';
+        passInput.type = 'password';
+        if (togglePassBtn) togglePassBtn.textContent = 'Show';
+        if (passError) passError.style.display = 'none';
+    });
+
+    document.getElementById('close-passcode')?.addEventListener('click', () => {
+        passcodeModal.style.display = 'none';
+    });
+
+    document.getElementById('passcode-submit')?.addEventListener('click', async () => {
+        if (passError) passError.style.display = 'none';
+        const submitBtn = document.getElementById('passcode-submit');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Logging in…';
+        try {
+            await adminLogin(emailInput.value.trim(), passInput.value);
+            passcodeModal.style.display = 'none';
+            document.getElementById('admin-panel').style.display = 'flex';
+            showStatus('Logged in as Admin!');
+        } catch (e) {
+            console.error('[CMS] Login failed:', e);
+            if (passError) {
+                passError.textContent = e.code === 'auth/invalid-credential'
+                    ? 'Wrong email or password.'
+                    : `Login error: ${e.message}`;
+                passError.style.display = 'block';
+            }
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Login';
         }
+    });
 
-        // --- COMPRESSION UTILS ---
-        function compressImage(file, maxSize = 800) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = event => {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width; let height = img.height;
-                        if (width > height) { if (width > maxSize) { height *= maxSize / width; width = maxSize; } } 
-                        else { if (height > maxSize) { width *= maxSize / height; height = maxSize; } }
-                        canvas.width = width; canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.8));
-                    };
-                    img.onerror = reject;
-                };
-                reader.onerror = reject;
-            });
-        }
+    document.getElementById('close-admin')?.addEventListener('click', () => {
+        document.getElementById('admin-panel').style.display = 'none';
+    });
 
-        function extractThumbnailFromUrl(url) {
-            const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
-            if (ytMatch && ytMatch[1]) return `https://img.youtube.com/vi/${ytMatch[1]}/maxresdefault.jpg`;
-            return url; 
-        }
+    document.getElementById('admin-logout-btn')?.addEventListener('click', async () => {
+        await adminLogout();
+        showStatus('Logged out.');
+    });
 
-        // --- ADMIN CMS PANEL LOGIC ---
-        const adminPanel = document.getElementById('admin-panel');
-        const passcodeModal = document.getElementById('passcode-modal');
-        const emailInput = document.getElementById('admin-email');
-        const passcodeInput = document.getElementById('admin-password');
-        const passcodeError = document.getElementById('passcode-error');
-        const togglePassVis = document.getElementById('toggle-pass-vis');
+    // ── Sidebar navigation ────────────────────────────────────────────────────
+    document.querySelectorAll('.cms-nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+            document.querySelectorAll('.cms-nav-item').forEach(n => n.classList.remove('active'));
+            document.querySelectorAll('.cms-form-panel').forEach(p => p.classList.remove('active'));
+            item.classList.add('active');
+            const panel = document.getElementById(item.dataset.panel);
+            if (panel) panel.classList.add('active');
+            if (item.dataset.panel === 'panel-manage') renderManageList();
+        });
+    });
 
-        togglePassVis.addEventListener('click', () => {
-            if (passcodeInput.type === 'password') {
-                passcodeInput.type = 'text'; togglePassVis.innerText = 'Hide';
+    // ── Save: Intro text ─────────────────────────────────────────────────────
+    document.getElementById('save-ui-btn')?.addEventListener('click', () => {
+        const fields = ['tech_hook','tech_p1','tech_p2','tech_p3','tech_p4',
+                        'crea_hook','crea_p1','crea_p2','crea_p3','crea_p4'];
+        const data = {};
+        fields.forEach(f => {
+            const el = document.getElementById('admin-' + f.replace(/_/g, '-'));
+            data[f] = el ? el.value : '';
+        });
+        saveUiDoc('main_intro', data);
+    });
+
+    // ── Save: Spotify player ──────────────────────────────────────────────────
+    document.getElementById('save-spotify-btn')?.addEventListener('click', () => {
+        const raw = document.getElementById('admin-spotify-url').value.trim();
+        const url = toSpotifyEmbed(raw);
+        if (!url.includes('spotify.com')) return showStatus('Enter a valid Spotify URL.', true);
+        saveUiDoc('spotify', { url });
+    });
+
+    // ── Save: Projects ────────────────────────────────────────────────────────
+    document.getElementById('save-proj-btn')?.addEventListener('click', () => {
+        const prio  = document.getElementById('admin-proj-priority');
+        const title = document.getElementById('admin-proj-title');
+        const desc  = document.getElementById('admin-proj-desc');
+        const link  = document.getElementById('admin-proj-link');
+        const tags  = document.getElementById('admin-proj-tags');
+        if (!title.value.trim()) return showStatus('Title is required.', true);
+        saveItem('projects', {
+            priority: prio.value,
+            title:    title.value.trim(),
+            desc:     desc.value.trim(),
+            link:     link.value.trim(),
+            tags:     tags ? tags.value.trim() : ''
+        }, [prio, title, desc, link, tags]);
+    });
+
+    // ── Save: Experience ──────────────────────────────────────────────────────
+    document.getElementById('save-exp-btn')?.addEventListener('click', () => {
+        const prio  = document.getElementById('admin-exp-priority');
+        const title = document.getElementById('admin-exp-title');
+        const desc  = document.getElementById('admin-exp-desc');
+        const meta  = document.getElementById('admin-exp-meta');
+        if (!title.value.trim()) return showStatus('Title is required.', true);
+        saveItem('experience', {
+            priority: prio.value,
+            title:    title.value.trim(),
+            desc:     desc.value.trim(),
+            meta:     meta.value.trim()
+        }, [prio, title, desc, meta]);
+    });
+
+    // ── Save: Education ───────────────────────────────────────────────────────
+    document.getElementById('save-edu-btn')?.addEventListener('click', () => {
+        const prio  = document.getElementById('admin-edu-priority');
+        const title = document.getElementById('admin-edu-title');
+        const meta  = document.getElementById('admin-edu-meta');
+        if (!title.value.trim()) return showStatus('Title is required.', true);
+        saveItem('education', {
+            priority: prio.value,
+            title:    title.value.trim(),
+            meta:     meta.value.trim()
+        }, [prio, title, meta]);
+    });
+
+    // ── Save: Certifications ──────────────────────────────────────────────────
+    document.getElementById('save-cert-btn')?.addEventListener('click', () => {
+        const prio  = document.getElementById('admin-cert-priority');
+        const title = document.getElementById('admin-cert-title');
+        const meta  = document.getElementById('admin-cert-meta');
+        const link  = document.getElementById('admin-cert-link');
+        if (!title.value.trim()) return showStatus('Title is required.', true);
+        saveItem('certifications', {
+            priority: prio.value,
+            title:    title.value.trim(),
+            meta:     meta.value.trim(),
+            link:     link ? link.value.trim() : ''
+        }, [prio, title, meta, link]);
+    });
+
+    // ── Save: Gallery (with image compression) ────────────────────────────────
+    document.getElementById('save-photo-btn')?.addEventListener('click', async () => {
+        const prio      = document.getElementById('admin-img-priority');
+        const fileInput = document.getElementById('admin-img-file');
+        const urlInput  = document.getElementById('admin-img-url');
+        const titleInp  = document.getElementById('admin-img-title');
+        const altInp    = document.getElementById('admin-img-alt');
+
+        showStatus('Processing image…');
+        let finalUrl = '';
+
+        try {
+            if (fileInput?.files?.[0]) {
+                const file = fileInput.files[0];
+
+                // Reject files over 20 MB before even trying
+                if (file.size > 20 * 1024 * 1024) {
+                    return showStatus('File too large (max 20 MB).', true);
+                }
+
+                // Compress: portrait/square → 1200px, landscape → 1600px
+                const isLandscape = true; // we'll get real dims after decode
+                finalUrl = await compressImage(file, {
+                    maxDim:   1400,
+                    quality:  0.84,
+                    maxBytes: 400 * 1024
+                });
+
+                const kb = Math.round(
+                    ((finalUrl.length - finalUrl.indexOf(',') - 1) * 0.75) / 1024
+                );
+                showStatus(`Image compressed to ~${kb} KB`);
+            } else if (urlInput?.value.trim()) {
+                finalUrl = extractYouTubeThumbnail(urlInput.value.trim());
             } else {
-                passcodeInput.type = 'password'; togglePassVis.innerText = 'Show';
+                return showStatus('Select a file or enter a URL.', true);
             }
-        });
 
-        document.getElementById('admin-trigger').addEventListener('click', () => {
-            passcodeModal.style.display = 'flex'; passcodeInput.value = ''; emailInput.value = '';
-            passcodeInput.type = 'password'; togglePassVis.innerText = 'Show';
-            passcodeError.style.display = 'none';
-        });
+            await saveItem('gallery', {
+                priority: prio.value,
+                url:      finalUrl,
+                title:    titleInp ? titleInp.value.trim() : '',
+                alt:      altInp   ? altInp.value.trim()   : ''
+            }, [prio, fileInput, urlInput, titleInp, altInp]);
 
-        document.getElementById('close-passcode').addEventListener('click', () => { passcodeModal.style.display = 'none'; });
+        } catch (e) {
+            console.error('[CMS] Image save error:', e);
+            showStatus('Error processing image.', true);
+        }
+    });
 
-        document.getElementById('passcode-submit').addEventListener('click', async () => {
-            passcodeError.style.display = 'none';
-            try {
-                await adminLogin(emailInput.value.trim(), passcodeInput.value);
-                passcodeModal.style.display = 'none'; adminPanel.style.display = 'flex';
-                showStatus("Logged in as Admin!");
-            } catch(e) { 
-                console.error("Login failed:", e);
-                passcodeError.innerText = "Invalid credentials. Try again.";
-                passcodeError.style.display = 'block'; 
-            }
-        });
+    // ── Save: Poetry ──────────────────────────────────────────────────────────
+    document.getElementById('save-poem-btn')?.addEventListener('click', () => {
+        const prio    = document.getElementById('admin-poem-priority');
+        const title   = document.getElementById('admin-poem-title');
+        const type    = document.getElementById('admin-poem-type');
+        const content = document.getElementById('admin-poem-content');
+        const link    = document.getElementById('admin-poem-link');
+        const lang    = document.getElementById('admin-poem-lang');
+        if (!title.value.trim()) return showStatus('Title is required.', true);
+        saveItem('poetry', {
+            priority: prio.value,
+            title:    title.value.trim(),
+            type:     type.value.trim(),
+            content:  content.value.trim(),
+            link:     link.value.trim(),
+            lang:     lang ? lang.value.trim() : 'en'
+        }, [prio, title, type, content, link, lang]);
+    });
 
-        document.getElementById('close-admin').addEventListener('click', () => { adminPanel.style.display = 'none'; });
+    // ── Save: Articles ────────────────────────────────────────────────────────
+    document.getElementById('save-art-btn')?.addEventListener('click', () => {
+        const prio  = document.getElementById('admin-art-priority');
+        const title = document.getElementById('admin-art-title');
+        const meta  = document.getElementById('admin-art-meta');
+        const link  = document.getElementById('admin-art-link');
+        const note  = document.getElementById('admin-art-note');
+        if (!title.value.trim()) return showStatus('Title is required.', true);
+        saveItem('articles', {
+            priority: prio.value,
+            title:    title.value.trim(),
+            meta:     meta.value.trim(),
+            link:     link.value.trim(),
+            note:     note ? note.value.trim() : ''
+        }, [prio, title, meta, link, note]);
+    });
 
-        // --- NEW SIDEBAR NAV LOGIC ---
-        document.querySelectorAll('.cms-nav-item').forEach(item => {
-            item.addEventListener('click', () => {
-                document.querySelectorAll('.cms-nav-item').forEach(n => n.classList.remove('active'));
-                document.querySelectorAll('.cms-form-panel').forEach(p => p.classList.remove('active'));
-                item.classList.add('active');
-                const panel = document.getElementById(item.dataset.panel);
-                if(panel) panel.classList.add('active');
-                if(item.dataset.panel === 'panel-manage') renderManageList();
+    // ── Save: Videos ──────────────────────────────────────────────────────────
+    document.getElementById('save-vid-btn')?.addEventListener('click', () => {
+        const prio  = document.getElementById('admin-vid-priority');
+        const title = document.getElementById('admin-vid-title');
+        const meta  = document.getElementById('admin-vid-meta');
+        const link  = document.getElementById('admin-vid-link');
+        if (!title.value.trim()) return showStatus('Title is required.', true);
+
+        let finalLink = link.value.trim();
+        // Auto-convert Spotify URLs
+        if (finalLink.includes('spotify.com') && !finalLink.includes('/embed/')) {
+            finalLink = toSpotifyEmbed(finalLink);
+        }
+        const thumb = finalLink ? extractYouTubeThumbnail(finalLink) : '';
+
+        saveItem('videos', {
+            priority:  prio.value,
+            title:     title.value.trim(),
+            meta:      meta.value.trim(),
+            link:      finalLink,
+            thumbnail: thumb
+        }, [prio, title, meta, link]);
+    });
+
+    // ── Save: Quotes ──────────────────────────────────────────────────────────
+    document.getElementById('save-quote-btn')?.addEventListener('click', () => {
+        const cat    = document.getElementById('admin-quote-category');
+        const text   = document.getElementById('admin-quote-text');
+        const author = document.getElementById('admin-quote-author');
+        if (!text.value.trim()) return showStatus('Quote text is required.', true);
+        saveItem('quotes', {
+            category: cat.value,
+            text:     text.value.trim(),
+            author:   author.value.trim()
+        }, [text, author]);
+    });
+
+    // ── Save: Playlists ───────────────────────────────────────────────────────
+    document.getElementById('save-playlist-btn')?.addEventListener('click', () => {
+        const prio  = document.getElementById('admin-playlist-priority');
+        const title = document.getElementById('admin-playlist-title');
+        const urlEl = document.getElementById('admin-playlist-url');
+        if (!title.value.trim() || !urlEl.value.trim()) {
+            return showStatus('Name and URL are both required.', true);
+        }
+
+        const link = toSpotifyEmbed(urlEl.value.trim());
+        if (!link.includes('spotify.com')) return showStatus('Enter a valid Spotify URL.', true);
+
+        const existing = window.globalManageData?.playlists || [];
+        if (existing.some(p => p.link === link)) {
+            return showStatus('This playlist is already in your curations.', true);
+        }
+
+        saveItem('playlists', {
+            priority: prio.value,
+            title:    title.value.trim(),
+            link
+        }, [prio, title, urlEl]);
+    });
+
+    // ── Manage / Delete ───────────────────────────────────────────────────────
+    document.getElementById('manage-category')?.addEventListener('change', renderManageList);
+
+    function renderManageList() {
+        const category  = document.getElementById('manage-category').value;
+        const items     = window.globalManageData?.[category] || [];
+        const container = document.getElementById('manage-items-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        if (items.length === 0) {
+            container.innerHTML = '<p style="color:rgba(255,255,255,0.3);font-size:0.9rem;padding:1rem 0;">No items in this section yet.</p>';
+            return;
+        }
+
+        items.forEach(item => {
+            let title = item.title || item.text || 'Untitled';
+            if (title.length > 55) title = title.substring(0, 55) + '…';
+            let sub = '';
+            if (item.priority)  sub += `Priority ${item.priority}`;
+            if (item.meta)      sub += (sub ? ' · ' : '') + item.meta;
+            if (item.category)  sub += (sub ? ' · ' : '') + `[${item.category.toUpperCase()}]`;
+            if (item.type)      sub += (sub ? ' · ' : '') + item.type;
+
+            const div = document.createElement('div');
+            div.className = 'cms-manage-item';
+            div.innerHTML = `
+                <div>
+                    <div class="cms-manage-item-text">${escapeHtml(title)}</div>
+                    ${sub ? `<div class="cms-manage-item-sub">${escapeHtml(sub)}</div>` : ''}
+                </div>
+                <button class="admin-btn-delete">Delete</button>`;
+            div.querySelector('.admin-btn-delete').addEventListener('click', () => {
+                deleteItem(category, item.id);
             });
+            container.appendChild(div);
         });
+    }
 
-        function showStatus(msg, isError = false) {
-            const s = document.getElementById('admin-status');
-            s.innerText = msg;
-            s.className = 'status-msg ' + (isError ? 'error' : 'success');
-            setTimeout(() => { s.innerText = ''; s.className = 'status-msg'; }, 3000);
+    // Expose renderManageList so main.js can call it after a sync
+    window._cmsRenderManageList = renderManageList;
+
+    async function deleteItem(category, docId) {
+        if (!confirm('Permanently delete this item?')) return;
+        try {
+            await deleteDoc(docPath(category, docId));
+            showStatus('Item deleted.');
+        } catch (e) {
+            console.error('[CMS] deleteItem error:', e);
+            showStatus('Failed to delete.', true);
         }
+    }
+}
 
-        async function saveItem(collectionName, dataObj, clearElements) {
-            try {
-                await addDoc(dataPath(collectionName), { ...dataObj, addedAt: Date.now() });
-                clearElements.forEach(el => { if(el) el.value = ''; });
-                showStatus("Saved successfully!");
-            } catch(e) { console.error(e); showStatus("Failed to save.", true); }
-        }
-
-        // --- SAVE BUTTONS ---
-        document.getElementById('save-ui-btn').addEventListener('click', async () => {
-            try {
-                await setDoc(docPath('ui_content', 'main_intro'), { 
-                    tech_hook: document.getElementById('admin-tech-hook').value,
-                    tech_p1: document.getElementById('admin-tech-p1').value,
-                    tech_p2: document.getElementById('admin-tech-p2').value,
-                    tech_p3: document.getElementById('admin-tech-p3').value,
-                    tech_p4: document.getElementById('admin-tech-p4').value,
-                    crea_hook: document.getElementById('admin-crea-hook').value,
-                    crea_p1: document.getElementById('admin-crea-p1').value,
-                    crea_p2: document.getElementById('admin-crea-p2').value,
-                    crea_p3: document.getElementById('admin-crea-p3').value,
-                    crea_p4: document.getElementById('admin-crea-p4').value
-                }, { merge: true });
-                showStatus("Both introductions updated!");
-            } catch(e) { console.error(e); showStatus("Failed to save UI text.", true); }
-        });
-
-        document.getElementById('save-spotify-btn').addEventListener('click', async () => {
-            let inputUrl = document.getElementById('admin-spotify-url').value.trim();
-            const srcMatch = inputUrl.match(/src="([^"]+)"/);
-            if(srcMatch) inputUrl = srcMatch[1];
-            const rawMatch = inputUrl.match(/open\.spotify\.com\/(track|playlist|album|show|episode|artist)\/([a-zA-Z0-9]+)/);
-            if(rawMatch && !inputUrl.includes('/embed/')) {
-                inputUrl = `https://open.spotify.com/embed/${rawMatch[1]}/${rawMatch[2]}?utm_source=generator&theme=0`;
-            }
-            if(!inputUrl || !inputUrl.includes('spotify.com')) return showStatus('Please enter a valid Spotify URL.', true);
-            
-            try {
-                await setDoc(docPath('ui_content', 'spotify'), { url: inputUrl }, { merge: true });
-                showStatus('Currently Playing updated!');
-            } catch(e) { showStatus('Failed to update player.', true); }
-        });
-
-        document.getElementById('save-proj-btn').addEventListener('click', () => {
-            const prio = document.getElementById('admin-proj-priority'); const t = document.getElementById('admin-proj-title'); 
-            const d = document.getElementById('admin-proj-desc'); const l = document.getElementById('admin-proj-link');
-            if(t.value) saveItem('projects', { priority: prio.value, title: t.value, desc: d.value, link: l.value }, [prio, t, d, l]);
-        });
-
-        document.getElementById('save-exp-btn').addEventListener('click', () => {
-            const p = document.getElementById('admin-exp-priority'); const t = document.getElementById('admin-exp-title');
-            const d = document.getElementById('admin-exp-desc'); const m = document.getElementById('admin-exp-meta');
-            if(t.value) saveItem('experience', { priority: p.value, title: t.value, desc: d.value, meta: m.value }, [p, t, d, m]);
-        });
-
-        document.getElementById('save-edu-btn').addEventListener('click', () => {
-            const p = document.getElementById('admin-edu-priority'); const t = document.getElementById('admin-edu-title');
-            const m = document.getElementById('admin-edu-meta');
-            if(t.value) saveItem('education', { priority: p.value, title: t.value, meta: m.value }, [p, t, m]);
-        });
-
-        document.getElementById('save-cert-btn').addEventListener('click', () => {
-            const p = document.getElementById('admin-cert-priority'); const t = document.getElementById('admin-cert-title');
-            const m = document.getElementById('admin-cert-meta');
-            if(t.value) saveItem('certifications', { priority: p.value, title: t.value, meta: m.value }, [p, t, m]);
-        });
-
-        document.getElementById('save-photo-btn').addEventListener('click', async () => {
-            const prio = document.getElementById('admin-img-priority');
-            const fileInput = document.getElementById('admin-img-file');
-            const urlInput = document.getElementById('admin-img-url');
-            const titleInput = document.getElementById('admin-img-title');
-            
-            let finalUrl = ""; showStatus("Processing image...");
-            try {
-                if (fileInput.files && fileInput.files[0]) { finalUrl = await compressImage(fileInput.files[0]); } 
-                else if (urlInput.value) { finalUrl = extractThumbnailFromUrl(urlInput.value); } 
-                else { return showStatus("Please select a file or enter a URL."); }
-                
-                await saveItem('gallery', { priority: prio.value, url: finalUrl, title: titleInput.value }, [prio, fileInput, urlInput, titleInput]);
-            } catch(e) { console.error(e); showStatus("Error processing image."); }
-        });
-
-        document.getElementById('save-poem-btn').addEventListener('click', () => {
-            const prio = document.getElementById('admin-poem-priority'); const t = document.getElementById('admin-poem-title'); 
-            const type = document.getElementById('admin-poem-type'); const content = document.getElementById('admin-poem-content');
-            const link = document.getElementById('admin-poem-link');
-            if(t.value) saveItem('poetry', { priority: prio.value, title: t.value, type: type.value, content: content.value, link: link.value }, [prio, t, type, content, link]);
-        });
-
-        document.getElementById('save-playlist-btn').addEventListener('click', () => {
-            const prio = document.getElementById('admin-playlist-priority');
-            const t = document.getElementById('admin-playlist-title');
-            const urlEl = document.getElementById('admin-playlist-url');
-            if(!t.value || !urlEl.value) return showStatus('Please enter a name and URL.', true);
-            
-            let link = urlEl.value.trim();
-            const rawMatch = link.match(/open\.spotify\.com\/(track|playlist|album|show|episode|artist)\/([a-zA-Z0-9]+)/);
-            if(rawMatch && !link.includes('/embed/')) {
-                link = `https://open.spotify.com/embed/${rawMatch[1]}/${rawMatch[2]}?utm_source=generator&theme=0`;
-            }
-            
-            const existing = window.globalManageData['playlists'] || [];
-            if(existing.some(p => p.link === link)) {
-                return showStatus('This playlist is already in your curations.', true);
-            }
-
-            saveItem('playlists', { priority: prio.value, title: t.value, link }, [prio, t, urlEl]);
-        });
-
-        document.getElementById('save-art-btn').addEventListener('click', () => {
-            const prio = document.getElementById('admin-art-priority'); const t = document.getElementById('admin-art-title'); 
-            const m = document.getElementById('admin-art-meta'); const l = document.getElementById('admin-art-link');
-            if(t.value) saveItem('articles', { priority: prio.value, title: t.value, meta: m.value, link: l.value }, [prio, t, m, l]);
-        });
-
-        document.getElementById('save-vid-btn').addEventListener('click', () => {
-            const prio = document.getElementById('admin-vid-priority'); const t = document.getElementById('admin-vid-title'); 
-            const m = document.getElementById('admin-vid-meta'); let l = document.getElementById('admin-vid-link');
-            
-            let finalLink = l.value;
-            const rawMatch = finalLink.match(/open\.spotify\.com\/(track|playlist|album|show|episode|artist)\/([a-zA-Z0-9]+)/);
-            if(rawMatch && !finalLink.includes('/embed/')) {
-                finalLink = `https://open.spotify.com/embed/${rawMatch[1]}/${rawMatch[2]}?utm_source=generator&theme=0`;
-            }
-            
-            const thumb = finalLink ? extractThumbnailFromUrl(finalLink) : '';
-            if(t.value) saveItem('videos', { priority: prio.value, title: t.value, meta: m.value, link: finalLink, thumbnail: thumb }, [prio, t, m, l]);
-        });
-
-        document.getElementById('save-quote-btn').addEventListener('click', () => {
-            const c = document.getElementById('admin-quote-category');
-            const t = document.getElementById('admin-quote-text'); const a = document.getElementById('admin-quote-author');
-            if(t.value) saveItem('quotes', { category: c.value, text: t.value, author: a.value }, [t, a]);
-        });
-
-        // --- MANAGE / DELETE LOGIC ---
-        document.getElementById('manage-category').addEventListener('change', renderManageList);
-
-        // Manage items render with better card style
-        function renderManageList() {
-            const category = document.getElementById('manage-category').value;
-            const items = window.globalManageData[category] || [];
-            const container = document.getElementById('manage-items-container');
-            container.innerHTML = '';
-            
-            if(items.length === 0) {
-                container.innerHTML = '<p style="color:rgba(255,255,255,0.3); font-size:0.9rem; padding: 1rem 0;">No items found in this section.</p>';
-                return;
-            }
-
-            items.forEach(item => {
-                let displayText = item.title || item.text || 'Untitled item';
-                if(displayText.length > 50) displayText = displayText.substring(0, 50) + '...';
-                let sub = '';
-                if(item.priority) sub += `Priority ${item.priority}`;
-                if(item.meta) sub += (sub ? ' · ' : '') + item.meta;
-                if(item.category) sub += (sub ? ' · ' : '') + `[${item.category.toUpperCase()}]`;
-                
-                container.innerHTML += `
-                    <div class="cms-manage-item">
-                        <div>
-                            <div class="cms-manage-item-text">${displayText}</div>
-                            ${sub ? `<div class="cms-manage-item-sub">${sub}</div>` : ''}
-                        </div>
-                        <button class="admin-btn-delete" onclick="window.deleteItem('${category}', '${item.id}')">Delete</button>
-                    </div>`;
-            });
-        }
-
-        window.deleteItem = async function(category, docId) {
-            if(!confirm("Are you sure you want to permanently delete this item?")) return;
-            try {
-                await deleteDoc(docPath(category, docId));
-                showStatus("Item successfully deleted!");
-            } catch(e) { console.error(e); showStatus("Failed to delete item.", true); }
-        };
-
-        
+// ─────────────────────────────────────────────────────────────────────────────
+// UTILITY
+// ─────────────────────────────────────────────────────────────────────────────
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
