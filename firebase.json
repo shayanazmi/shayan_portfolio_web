@@ -10,6 +10,7 @@
       "package-lock.json",
       "package.json",
       "README.md",
+      "firestore.rules",
       ".git/**"
     ],
     "rewrites": [
@@ -18,5 +19,8 @@
         "destination": "/index.html"
       }
     ]
+  },
+  "firestore": {
+    "rules": "firestore.rules"
   }
 }

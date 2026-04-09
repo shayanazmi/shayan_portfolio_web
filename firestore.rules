@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── CMS collections ─────────────────────────────────────────────────────
+    // Path: /cms/{collectionName}/items/{docId}
+    // Anyone can read (portfolio is public). Only verified admin can write.
+    match /cms/{collectionName}/items/{docId} {
+      allow read: if true;
+      allow create: if isAdmin() && validWrite();
+      allow update: if isAdmin() && validWrite();
+      allow delete: if isAdmin();
+    }
+
+    // ── UI Singletons ────────────────────────────────────────────────────────
+    // Path: /cms_ui/{docId}  (e.g. main_intro, spotify)
+    match /cms_ui/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ── Deny everything else by default ─────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ── Helper functions ─────────────────────────────────────────────────────
+
+    // isAdmin: must be signed in AND have a verified email
+    function isAdmin() {
+      return request.auth != null
+          && request.auth.token.email_verified == true;
+    }
+
+    // validWrite: guard against oversized or malformed payloads
+    function validWrite() {
+      let data = request.resource.data;
+      // Max single document size guard (reasonable field limits)
+      return data.keys().size() <= 20
+          && (!('url'   in data) || data.url.size()   <= 500000)  // 500 KB base64 max
+          && (!('title' in data) || data.title.size() <= 500)
+          && (!('desc'  in data) || data.desc.size()  <= 5000)
+          && (!('content' in data) || data.content.size() <= 10000);
+    }
+  }
+}

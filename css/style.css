@@ -418,4 +418,264 @@ footer { padding: 8rem 5vw 4rem 5vw; border-top: 1px solid var(--card-border); p
 }
 .show-more-toggle:hover { text-decoration: underline; }
 
+/* --- GALLERY LIGHTBOX CURSOR --- */
+.gallery-item { cursor: zoom-in; }
+
+/* --- ADMIN SELECT DROPDOWN --- */
+.admin-select {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 8px;
+    color: #fff;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+}
+.admin-select:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* --- SKELETON LOADERS --- */
+@keyframes skeleton-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+.skeleton {
+    background: linear-gradient(90deg,
+        rgba(255,255,255,0.04) 25%,
+        rgba(255,255,255,0.10) 50%,
+        rgba(255,255,255,0.04) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.6s ease-in-out infinite;
+    border-radius: 8px;
+}
+.skeleton-line {
+    height: 2rem;
+    border-radius: 50px;
+    display: inline-block;
+    margin: 0.25rem;
+}
+.skeleton-card {
+    border-radius: 16px;
+    min-height: 180px;
+    border: 1px solid rgba(255,255,255,0.04);
+}
+
+/* --- QUOTE FADE TRANSITION --- */
+.dynamic-quote-text,
+.dynamic-quote-author {
+    transition: opacity 0.5s ease;
+}
+.dynamic-quote-text.fading,
+.dynamic-quote-author.fading {
+    opacity: 0;
+}
+
+/* --- FOOTER SOCIAL LINK HOVER ANIMATION --- */
+footer ul li a {
+    position: relative;
+    display: inline-block;
+    transition: color 0.3s, transform 0.3s;
+}
+footer ul li a::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--accent);
+    transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+footer ul li a:hover {
+    color: var(--accent) !important;
+    transform: translateY(-2px);
+}
+footer ul li a:hover::after { width: 100%; }
+
+/* --- FOOTER EMAIL HINT --- */
+.footer-email-hint {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    letter-spacing: 2px;
+    font-family: var(--font-body);
+    margin-bottom: 3rem;
+    margin-top: -0.5rem;
+}
+
+/* --- ENTROPY CANVAS RESPONSIVE --- */
+#entropy-canvas {
+    width:  100% !important;
+    height: 100% !important;
+}
+
+/* --- MOBILE CMS LAYOUT --- */
+@media (max-width: 640px) {
+    .close-admin {
+        position: fixed;
+        top: 0.8rem;
+        right: 0.8rem;
+        z-index: 10001;
+    }
+    .cms-shell {
+        flex-direction: column;
+        width: 100%;
+        height: 100dvh;
+        border-radius: 0;
+        border: none;
+    }
+    .cms-sidebar {
+        width: 100%;
+        min-width: 100%;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 0.5rem 0;
+        height: auto;
+        min-height: unset;
+        border-right: none;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .cms-sidebar-header,
+    .cms-nav-group-label,
+    .cms-sidebar-footer { display: none; }
+    .cms-nav-item {
+        flex-shrink: 0;
+        border-left: none;
+        border-bottom: 2px solid transparent;
+        flex-direction: column;
+        gap: 0.2rem;
+        padding: 0.5rem 0.8rem;
+        font-size: 0.72rem;
+        white-space: nowrap;
+    }
+    .cms-nav-item.active {
+        border-left: none;
+        border-bottom-color: var(--accent);
+    }
+    .cms-main { padding: 1.2rem; }
+}
+
+/* --- PLACES EXPLORED GRID (Replaces empty map) --- */
+.places-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+}
+.place-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.65rem 1.3rem;
+    border-radius: 60px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    font-size: 0.88rem;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    color: var(--text-main);
+    transition: all var(--transition-fast);
+}
+.place-chip:hover {
+    background: var(--card-hover);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+.place-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    flex-shrink: 0;
+}
+
+/* --- COPY EMAIL BUTTON --- */
+.footer-email-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-bottom: 3rem;
+    margin-top: -0.5rem;
+}
+.footer-email-row .footer-email-hint {
+    margin-bottom: 0;
+    margin-top: 0;
+}
+.copy-email-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.35rem;
+    transition: all 0.3s ease;
+}
+.copy-email-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: rgba(0,225,255,0.05);
+}
+.copy-email-btn.copied {
+    color: #4CAF50;
+    border-color: #4CAF50;
+}
+
+/* --- CUSTOM DELETE CONFIRMATION --- */
+.admin-btn-delete {
+    transition: all 0.3s ease;
+}
+.admin-btn-delete.confirming {
+    background: rgba(255,51,51,0.15) !important;
+    border-color: #ff3333 !important;
+    color: #ff3333 !important;
+    animation: pulse-delete 0.6s ease;
+}
+@keyframes pulse-delete {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* --- GALLERY ITEM HOVER POLISH --- */
+.gallery-item {
+    position: relative;
+    overflow: hidden;
+}
+.gallery-item img {
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.gallery-item:hover img {
+    transform: scale(1.06);
+}
+
+/* --- MOBILE NAV RESPONSIVE --- */
+@media (max-width: 520px) {
+    nav {
+        padding: 0.6rem 1rem;
+    }
+    .nav-logo {
+        font-size: 0.85rem;
+        letter-spacing: 2px;
+    }
+    #alter-ego-toggle {
+        font-size: 0.65rem !important;
+        padding: 0.4rem 0.8rem;
+        letter-spacing: 1px !important;
+    }
+}
+
+/* --- TOGGLE LABEL TRANSITION --- */
+#toggle-label {
+    display: inline-block;
+    transition: opacity 0.3s ease;
+}

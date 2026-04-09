@@ -24,7 +24,8 @@ let currentVideosItems   = [];
 // Shared state used by CMS manage panel
 window.globalManageData = {
     projects: [], experience: [], education: [], certifications: [],
-    gallery: [], poetry: [], articles: [], videos: [], quotes: [], playlists: []
+    gallery: [], poetry: [], articles: [], videos: [], quotes: [], playlists: [],
+    skills: []
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -59,6 +60,22 @@ const defaultPoetry    = [{ id: 'dpoe1', title: 'An Ode to the Code', type: 'Naz
 const defaultArticles  = [{ id: 'da1', title: 'The Psychology of Human Misjudgment', meta: 'Charlie Munger · Essay', link: '#', priority: 1 }];
 const defaultVideos    = [{ id: 'dv1', title: 'The Art of Color Grading', meta: 'YouTube · Video Essay', link: '#', priority: 1 }];
 const defaultPlaylists = [];
+const defaultSkills = [
+    { id: 'dsk1', name: 'Python',           priority: 1  },
+    { id: 'dsk2', name: 'R',                priority: 2  },
+    { id: 'dsk3', name: 'SQL',              priority: 3  },
+    { id: 'dsk4', name: 'Scikit-learn',     priority: 4  },
+    { id: 'dsk5', name: 'Pandas',           priority: 5  },
+    { id: 'dsk6', name: 'NumPy',            priority: 6  },
+    { id: 'dsk7', name: 'OpenCV',           priority: 7  },
+    { id: 'dsk8', name: 'TensorFlow',       priority: 8  },
+    { id: 'dsk9', name: 'Keras',            priority: 9  },
+    { id: 'dsk10', name: 'XGBoost',         priority: 10 },
+    { id: 'dsk11', name: 'Machine Learning',priority: 11 },
+    { id: 'dsk12', name: 'Computer Vision', priority: 12 },
+    { id: 'dsk13', name: 'NLP (RAG)',       priority: 13 },
+    { id: 'dsk14', name: 'Data Modeling',   priority: 14 },
+];
 const defaultTechQuotes = [
     { id: 'dtq1', text: "The art of programming is the art of organizing complexity.", author: "Edsger W. Dijkstra", category: "tech" },
     { id: 'dtq2', text: "Innovation distinguishes between a leader and a follower.",   author: "Steve Jobs",         category: "tech" }
@@ -146,9 +163,9 @@ function startDataFetch() {
 
             window.globalManageData[collName] = items;
 
-            // Refresh manage panel if it's currently showing this category
-            const cat = document.getElementById('manage-category');
-            if (cat?.value === collName) window._cmsRenderManageList?.();
+            // Refresh manage panel whenever it is open (any category updated)
+            const managePanel = document.getElementById('panel-manage');
+            if (managePanel?.classList.contains('active')) window._cmsRenderManageList?.();
 
             renderFn(items.length ? items : defaults);
         }, err => {
@@ -157,15 +174,16 @@ function startDataFetch() {
         });
     }
 
-    syncCollection('projects',       defaultProjects,      renderProjects);
-    syncCollection('experience',     defaultExperience,    renderExperience);
-    syncCollection('education',      defaultEducation,     renderEducation);
+    syncCollection('projects',       defaultProjects,       renderProjects);
+    syncCollection('experience',     defaultExperience,     renderExperience);
+    syncCollection('education',      defaultEducation,      renderEducation);
     syncCollection('certifications', defaultCertifications, renderCertifications);
-    syncCollection('gallery',        defaultGallery,       renderGallery);
-    syncCollection('poetry',         defaultPoetry,        renderPoetry);
-    syncCollection('articles',       defaultArticles,      renderArticles);
-    syncCollection('videos',         defaultVideos,        renderVideos);
-    syncCollection('playlists',      defaultPlaylists,     renderPlaylists);
+    syncCollection('gallery',        defaultGallery,        renderGallery);
+    syncCollection('poetry',         defaultPoetry,         renderPoetry);
+    syncCollection('articles',       defaultArticles,       renderArticles);
+    syncCollection('videos',         defaultVideos,         renderVideos);
+    syncCollection('playlists',      defaultPlaylists,      renderPlaylists);
+    syncCollection('skills',         defaultSkills,         renderSkills);
 
     // Quotes get split into two buckets
     onSnapshot(dataPath('quotes'), snap => {
@@ -196,6 +214,7 @@ function renderAllDefaults() {
     renderArticles(defaultArticles);
     renderVideos(defaultVideos);
     renderPlaylists(defaultPlaylists);
+    renderSkills(defaultSkills);
     techQuotes     = defaultTechQuotes;
     creativeQuotes = defaultCreativeQuotes;
     renderQuotes();
@@ -274,7 +293,8 @@ function renderGallery(items) {
     const btn = document.getElementById('show-more-gallery-btn');
     if (!c) return;
     c.innerHTML = currentGalleryItems.map((item, i) => `
-        <div class="gallery-item${i >= GALLERY_LIMIT && !galleryShowingAll ? ' hidden-item' : ''}">
+        <div class="gallery-item${i >= GALLERY_LIMIT && !galleryShowingAll ? ' hidden-item' : ''}" onclick="openLightbox('${item.url.replace(/'/g, "\\'")}')"
+             role="button" tabindex="0" aria-label="View ${escapeHtml(item.title || 'photo')} full screen">
             <img src="${item.url}" alt="${escapeHtml(item.alt || item.title || '')}" loading="lazy">
             <div class="ig-overlay">${escapeHtml(item.title || '')}</div>
         </div>`).join('');
@@ -284,6 +304,32 @@ function renderGallery(items) {
             btn.textContent = galleryShowingAll ? 'View Less' : `View All Frames (${currentGalleryItems.length})`;
     }
 }
+
+// ── Lightbox ─────────────────────────────────────────────────────────────────
+function openLightbox(src) {
+    let lb = document.getElementById('photo-lightbox');
+    if (!lb) {
+        lb = document.createElement('div');
+        lb.id = 'photo-lightbox';
+        lb.style.cssText = 'position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;cursor:zoom-out;opacity:0;transition:opacity 0.3s ease;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);';
+        lb.innerHTML = '<img style="max-width:92vw;max-height:92vh;object-fit:contain;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,0.8);" alt="Fullscreen photo">';
+        lb.addEventListener('click', () => {
+            lb.style.opacity = '0';
+            setTimeout(() => lb.style.display = 'none', 300);
+        });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && lb.style.display === 'flex') {
+                lb.style.opacity = '0';
+                setTimeout(() => lb.style.display = 'none', 300);
+            }
+        });
+        document.body.appendChild(lb);
+    }
+    lb.querySelector('img').src = src;
+    lb.style.display = 'flex';
+    requestAnimationFrame(() => lb.style.opacity = '1');
+}
+window.openLightbox = openLightbox; // expose for inline onclick
 
 function renderPoetry(items) {
     if (items) currentPoetryItems = items;
@@ -375,6 +421,19 @@ function renderPlaylists(items) {
     }).join('');
 }
 
+function applyQuote(displayEl, authorEl, quote) {
+    if (!displayEl || !quote) return;
+    displayEl.classList.add('fading');
+    if (authorEl) authorEl.classList.add('fading');
+    setTimeout(() => {
+        displayEl.textContent = `"${quote.text}"`;
+        if (authorEl) authorEl.textContent = `- ${quote.author}`;
+        displayEl.classList.remove('fading');
+        if (authorEl) authorEl.classList.remove('fading');
+    }, 520);
+}
+
+let _quoteRotationStarted = false;
 function renderQuotes() {
     const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 
@@ -392,6 +451,33 @@ function renderQuotes() {
         if (d) d.textContent = `"${q.text}"`;
         if (a) a.textContent = `- ${q.author}`;
     }
+
+    // Start auto-rotation once quotes are ready (idempotent)
+    if (!_quoteRotationStarted && (techQuotes.length || creativeQuotes.length)) {
+        _quoteRotationStarted = true;
+        setInterval(() => {
+            const pick2 = arr => arr[Math.floor(Math.random() * arr.length)];
+            if (techQuotes.length)
+                applyQuote(
+                    document.getElementById('tech-quote-display'),
+                    document.getElementById('tech-quote-author'),
+                    pick2(techQuotes)
+                );
+            if (creativeQuotes.length)
+                applyQuote(
+                    document.getElementById('creative-quote-display'),
+                    document.getElementById('creative-quote-author'),
+                    pick2(creativeQuotes)
+                );
+        }, 9000);
+    }
+}
+
+function renderSkills(items) {
+    const c = document.getElementById('skills-container');
+    if (!c) return;
+    const list = (items && items.length) ? items : defaultSkills;
+    c.innerHTML = list.map(s => `<div class="skill-tag">${escapeHtml(s.name)}</div>`).join('');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -455,6 +541,9 @@ function initAlterEgoToggle() {
                     if (techHero)    techHero.style.opacity    = '1';
                     if (bgTech)      bgTech.style.opacity      = '0.7';
                 }
+                // Update toggle button label
+                const label = document.getElementById('toggle-label');
+                if (label) label.textContent = isTech ? 'TECH' : 'CREATIVE';
             }, 50);
         }, 400);
     });
@@ -478,11 +567,14 @@ function initTechCanvas() {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let width, height, particles = [];
+    let animFrameId = null;
 
     function resize() {
         width  = canvas.parentElement.clientWidth;
         height = canvas.parentElement.clientHeight;
         const dpr = window.devicePixelRatio || 1;
+        // Cancel any running frame before resetting the canvas context
+        if (animFrameId) cancelAnimationFrame(animFrameId);
         canvas.width  = width  * dpr;
         canvas.height = height * dpr;
         canvas.style.width  = width  + 'px';
@@ -495,6 +587,7 @@ function initTechCanvas() {
             radius: Math.random() * 2 + 1.5,
             speed:  Math.random() * 1.5 + 0.5
         }));
+        animate(); // restart a single loop
     }
 
     function animate() {
@@ -507,12 +600,11 @@ function initTechCanvas() {
             ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
             ctx.fill();
         });
-        requestAnimationFrame(animate);
+        animFrameId = requestAnimationFrame(animate);
     }
 
     window.addEventListener('resize', resize);
     resize();
-    animate();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -529,8 +621,7 @@ function initEntropyCanvas() {
     const dpr = window.devicePixelRatio || 1;
     canvas.width  = SIZE * dpr;
     canvas.height = SIZE * dpr;
-    canvas.style.width  = SIZE + 'px';
-    canvas.style.height = SIZE + 'px';
+    // CSS (width:100%; height:100%) handles responsive display sizing
     ctx.scale(dpr, dpr);
 
     class Particle {
@@ -624,26 +715,27 @@ function initDinoGame() {
 
     const ctx      = canvas.getContext('2d');
     const groundY  = 320;
-    let dinoY, dinoVel, obstacles, score, frameCount, gameSpeed, isOver, interval;
+    let dinoY, dinoVel, obstacles, score, frameCount, gameSpeed, isOver, rafId;
 
     function start() {
         dinoY = groundY; dinoVel = 0; obstacles = [];
         score = 0; frameCount = 0; gameSpeed = 6; isOver = false;
         scoreDisplay.textContent = 'Score: 000';
         overlay.style.display = 'none';
-        clearInterval(interval);
-        interval = setInterval(loop, 1000 / 60);
+        if (rafId) cancelAnimationFrame(rafId);
+        loop();
     }
 
     function loop() {
         if (isOver) {
             overlay.style.display = 'flex';
-            scoreDisplay.textContent = `System Halted. Score: ${Math.floor(score).toString().padStart(3,'0')}`;
+            scoreDisplay.textContent = `System Halted. Score: ${Math.floor(score)}`;
             startBtn.textContent = 'Reboot Sequence';
-            clearInterval(interval);
+            rafId = null;
             return;
         }
         update(); draw();
+        rafId = requestAnimationFrame(loop);
     }
 
     function update() {
@@ -727,3 +819,27 @@ function escapeHtml(str) {
     return String(str ?? '')
         .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// COPY EMAIL
+// ─────────────────────────────────────────────────────────────────────────────
+document.getElementById('copy-email-btn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('copy-email-btn');
+    try {
+        await navigator.clipboard.writeText('shayanazmi2006@gmail.com');
+        btn.classList.add('copied');
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+        setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
+        }, 2000);
+    } catch (e) {
+        // Fallback for older browsers
+        const ta = document.createElement('textarea');
+        ta.value = 'shayanazmi2006@gmail.com';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+    }
+});

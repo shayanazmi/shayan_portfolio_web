@@ -22,7 +22,7 @@ import {
  * @returns {Promise<string>} base64 data URL
  */
 async function compressImage(file, {
-    maxDim   = 1200,
+    maxDim   = null,    // null = auto-detect from orientation
     quality  = 0.82,
     maxBytes = 300 * 1024   // 300 KB
 } = {}) {
@@ -30,9 +30,12 @@ async function compressImage(file, {
     const bitmap = await createImageBitmap(file);
     let { width, height } = bitmap;
 
-    // 2. Resize proportionally to fit within maxDim
-    if (width > maxDim || height > maxDim) {
-        const scale = maxDim / Math.max(width, height);
+    // 2. Orientation-aware max dimension (landscape gets more pixels)
+    const adaptedMaxDim = maxDim ?? (width >= height ? 1600 : 1200);
+
+    // 3. Resize proportionally to fit within adaptedMaxDim
+    if (width > adaptedMaxDim || height > adaptedMaxDim) {
+        const scale = adaptedMaxDim / Math.max(width, height);
         width  = Math.round(width  * scale);
         height = Math.round(height * scale);
     }
@@ -256,7 +259,7 @@ function initCMS() {
         const tags  = document.getElementById('admin-proj-tags');
         if (!title.value.trim()) return showStatus('Title is required.', true);
         saveItem('projects', {
-            priority: prio.value,
+            priority: Number(prio.value) || 999,
             title:    title.value.trim(),
             desc:     desc.value.trim(),
             link:     link.value.trim(),
@@ -272,7 +275,7 @@ function initCMS() {
         const meta  = document.getElementById('admin-exp-meta');
         if (!title.value.trim()) return showStatus('Title is required.', true);
         saveItem('experience', {
-            priority: prio.value,
+            priority: Number(prio.value) || 999,
             title:    title.value.trim(),
             desc:     desc.value.trim(),
             meta:     meta.value.trim()
@@ -286,7 +289,7 @@ function initCMS() {
         const meta  = document.getElementById('admin-edu-meta');
         if (!title.value.trim()) return showStatus('Title is required.', true);
         saveItem('education', {
-            priority: prio.value,
+            priority: Number(prio.value) || 999,
             title:    title.value.trim(),
             meta:     meta.value.trim()
         }, [prio, title, meta]);
@@ -300,7 +303,7 @@ function initCMS() {
         const link  = document.getElementById('admin-cert-link');
         if (!title.value.trim()) return showStatus('Title is required.', true);
         saveItem('certifications', {
-            priority: prio.value,
+            priority: Number(prio.value) || 999,
             title:    title.value.trim(),
             meta:     meta.value.trim(),
             link:     link ? link.value.trim() : ''
@@ -327,10 +330,8 @@ function initCMS() {
                     return showStatus('File too large (max 20 MB).', true);
                 }
 
-                // Compress: portrait/square → 1200px, landscape → 1600px
-                const isLandscape = true; // we'll get real dims after decode
+                // maxDim is auto-computed from orientation inside compressImage
                 finalUrl = await compressImage(file, {
-                    maxDim:   1400,
                     quality:  0.84,
                     maxBytes: 400 * 1024
                 });
@@ -410,12 +411,23 @@ function initCMS() {
         const thumb = finalLink ? extractYouTubeThumbnail(finalLink) : '';
 
         saveItem('videos', {
-            priority:  prio.value,
+            priority:  Number(prio.value) || 999,
             title:     title.value.trim(),
             meta:      meta.value.trim(),
             link:      finalLink,
             thumbnail: thumb
         }, [prio, title, meta, link]);
+    });
+
+    // ── Save: Skills ──────────────────────────────────────────────────────────
+    document.getElementById('save-skill-btn')?.addEventListener('click', () => {
+        const prio = document.getElementById('admin-skill-priority');
+        const name = document.getElementById('admin-skill-name');
+        if (!name.value.trim()) return showStatus('Skill name is required.', true);
+        saveItem('skills', {
+            priority: Number(prio.value) || 999,
+            name:     name.value.trim()
+        }, [prio, name]);
     });
 
     // ── Save: Quotes ──────────────────────────────────────────────────────────
@@ -471,7 +483,7 @@ function initCMS() {
         }
 
         items.forEach(item => {
-            let title = item.title || item.text || 'Untitled';
+            let title = item.title || item.name || item.text || 'Untitled';
             if (title.length > 55) title = title.substring(0, 55) + '…';
             let sub = '';
             if (item.priority)  sub += `Priority ${item.priority}`;
@@ -487,8 +499,20 @@ function initCMS() {
                     ${sub ? `<div class="cms-manage-item-sub">${escapeHtml(sub)}</div>` : ''}
                 </div>
                 <button class="admin-btn-delete">Delete</button>`;
-            div.querySelector('.admin-btn-delete').addEventListener('click', () => {
-                deleteItem(category, item.id);
+            div.querySelector('.admin-btn-delete').addEventListener('click', function() {
+                if (this.classList.contains('confirming')) {
+                    // Second click → actually delete
+                    deleteItem(category, item.id);
+                } else {
+                    // First click → show confirm state
+                    this.classList.add('confirming');
+                    this.textContent = '⚠ Confirm?';
+                    // Auto-reset after 3 seconds if not clicked
+                    setTimeout(() => {
+                        this.classList.remove('confirming');
+                        this.textContent = 'Delete';
+                    }, 3000);
+                }
             });
             container.appendChild(div);
         });
@@ -498,7 +522,6 @@ function initCMS() {
     window._cmsRenderManageList = renderManageList;
 
     async function deleteItem(category, docId) {
-        if (!confirm('Permanently delete this item?')) return;
         try {
             await deleteDoc(docPath(category, docId));
             showStatus('Item deleted.');

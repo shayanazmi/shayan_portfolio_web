@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -17,7 +18,7 @@
     <div class="nav-wrapper">
         <nav>
             <div class="nav-logo">Shayan Azmi</div>
-            <button class="toggle-btn" id="alter-ego-toggle" style="font-weight: 800; letter-spacing: 2px;">ALTEREGO</button>
+            <button class="toggle-btn" id="alter-ego-toggle" aria-label="Switch between Tech and Creative modes" style="font-weight: 800; letter-spacing: 2px;"><span id="toggle-label">CREATIVE</span></button>
         </nav>
     </div>
 
@@ -81,6 +82,9 @@
                     <div class="cms-nav-item" data-panel="panel-certifications">
                         <span class="cms-icon">&#127941;</span> Certifications
                     </div>
+                    <div class="cms-nav-item" data-panel="panel-skills">
+                        <span class="cms-icon">&#128295;</span> Core Stack
+                    </div>
                 </div>
 
                 <div class="cms-nav-group">
@@ -111,6 +115,7 @@
                         <span id="cms-auth-dot"></span>
                         <span id="cms-auth-label" style="color: rgba(255,255,255,0.3); font-family: var(--font-body);">Connecting...</span>
                     </div>
+                    <button id="admin-logout-btn" class="admin-btn admin-btn-secondary" style="display:none; margin-top:0.8rem; font-size:0.72rem; padding:0.55rem 1rem;">&#8617; Logout</button>
                 </div>
             </div>
 
@@ -201,6 +206,7 @@
                     </div>
                     <div class="cms-field"><label>Description</label><textarea id="admin-proj-desc" class="admin-textarea" placeholder="What does it do? What tech did you use?"></textarea></div>
                     <div class="cms-field"><label>GitHub / Live URL</label><input type="text" id="admin-proj-link" class="admin-input" placeholder="https://github.com/..."></div>
+                    <div class="cms-field"><label>Tags (comma-separated)</label><input type="text" id="admin-proj-tags" class="admin-input" placeholder="Python, TensorFlow, RAG..."></div>
                     <button class="admin-btn" id="save-proj-btn">&#43; Add Project</button>
                 </div>
 
@@ -244,6 +250,7 @@
                         <div class="cms-field"><label>Certificate Name</label><input type="text" id="admin-cert-title" class="admin-input" placeholder="Data Analysis With R"></div>
                     </div>
                     <div class="cms-field"><label>Issuer &bull; Score</label><input type="text" id="admin-cert-meta" class="admin-input" placeholder="Google &bull; Scored 90%"></div>
+                    <div class="cms-field"><label>Certificate URL (optional)</label><input type="text" id="admin-cert-link" class="admin-input" placeholder="https://coursera.org/verify/..."></div>
                     <button class="admin-btn" id="save-cert-btn">&#43; Add Certification</button>
                 </div>
 
@@ -264,6 +271,7 @@
                         <input type="text" id="admin-img-url" class="admin-input" placeholder="https://... (YouTube links extract thumbnail)">
                     </div>
                     <div class="cms-field"><label>Caption / Hover Title</label><input type="text" id="admin-img-title" class="admin-input" placeholder="e.g. Street Photography, Delhi"></div>
+                    <div class="cms-field"><label>Alt Text (accessibility)</label><input type="text" id="admin-img-alt" class="admin-input" placeholder="e.g. Golden hour street shot at Chandni Chowk"></div>
                     <button class="admin-btn" id="save-photo-btn">&#43; Save to Gallery</button>
                 </div>
 
@@ -280,6 +288,13 @@
                     <div class="cms-field"><label>Poem Title</label><input type="text" id="admin-poem-title" class="admin-input" placeholder="e.g. An Ode to the Algorithm"></div>
                     <div class="cms-field"><label>Content</label><textarea id="admin-poem-content" class="admin-textarea" style="min-height: 140px;" placeholder="Paste your poem here, line breaks preserved..."></textarea></div>
                     <div class="cms-field"><label>Rekhta / External Link (optional)</label><input type="text" id="admin-poem-link" class="admin-input" placeholder="https://rekhta.org/..."></div>
+                    <div class="cms-field"><label>Language</label>
+                        <select id="admin-poem-lang" class="admin-select">
+                            <option value="en">English</option>
+                            <option value="ur">Urdu (اردو)</option>
+                            <option value="hi">Hindi (हिन्दी)</option>
+                        </select>
+                    </div>
                     <button class="admin-btn" id="save-poem-btn">&#43; Save Poetry</button>
                 </div>
 
@@ -295,6 +310,7 @@
                     </div>
                     <div class="cms-field"><label>Article / Book Title</label><input type="text" id="admin-art-title" class="admin-input" placeholder="e.g. The Psychology of Human Misjudgment"></div>
                     <div class="cms-field"><label>Link (optional)</label><input type="text" id="admin-art-link" class="admin-input" placeholder="https://..."></div>
+                    <div class="cms-field"><label>My Note (optional)</label><input type="text" id="admin-art-note" class="admin-input" placeholder="Key takeaway or why I recommend this..."></div>
                     <button class="admin-btn" id="save-art-btn">&#43; Add to Reading List</button>
                 </div>
 
@@ -317,6 +333,19 @@
                     <button class="admin-btn" id="save-vid-btn">&#43; Add to Watchlist</button>
                 </div>
 
+                <!-- SKILLS -->
+                <div class="cms-form-panel" id="panel-skills">
+                    <div class="cms-form-header">
+                        <h3>Core Stack &amp; Skills</h3>
+                        <p>Skills shown as tags in the Tech side. Use priority to order them.</p>
+                    </div>
+                    <div class="cms-row">
+                        <div class="cms-field"><label>Priority</label><input type="number" id="admin-skill-priority" class="admin-input" placeholder="1"></div>
+                        <div class="cms-field"><label>Skill / Technology</label><input type="text" id="admin-skill-name" class="admin-input" placeholder="e.g. TensorFlow"></div>
+                    </div>
+                    <button class="admin-btn" id="save-skill-btn">&#43; Add Skill</button>
+                </div>
+
                 <!-- MANAGE / DELETE -->
                 <div class="cms-form-panel" id="panel-manage">
                     <div class="cms-form-header">
@@ -336,6 +365,7 @@
                             <option value="articles">Articles</option>
                             <option value="videos">Videos</option>
                             <option value="quotes">Quotes</option>
+                            <option value="skills">Core Stack / Skills</option>
                         </select>
                     </div>
                     <div id="manage-items-container" style="margin-top: 0.5rem;"></div>
@@ -382,10 +412,10 @@
             </div>
             
             <div class="hero-intro reveal-up">
-                <p id="ui-crea-p1">Hey My name is Shayan, Shayan Azmi. Hahaha i know very bond like intro but yes i am creative peice god has made.</p>
-                <p id="ui-crea-p2">Well for starting let me start with things i am thoda thoda intrested in apart from my course work or my carreer (ehhh AI, data science and everything in between) - photography, filmaking, poetry, psychology, philosophy, cognitive behaviour of the society, politics, societal behaviour, travelling, exploring diverse culture; demographies and people while staying strong with my roots.</p>
-                <p id="ui-crea-p3" class="crea-more-txt" style="display:none;">Ahan roots to talk about i am from patna; yes that litti choka waka patna in bihar (if you are in my city hit me up; i might be around the corner eating "dahi - sev bundiya" at the "hanuman mandir rajbhansi nagar")</p>
-                <p id="ui-crea-p4" class="crea-more-txt" style="display:none;">Comming to my edu and things and i trying to learn, apply and contribute to and with are the big 2 - Data and AI; since i am currently in my undergrad i have not speicifed my niche and still diversifying my portfolio to first try and then decide.</p>
+                <p id="ui-crea-p1">Hey, my name is Shayan, Shayan Azmi. Hahaha I know, very Bond-like intro, but yes I am a creative piece God has made.</p>
+                <p id="ui-crea-p2">Well for starters, let me begin with things I am thoda thoda interested in apart from my coursework or my career (ehhh AI, data science and everything in between) — photography, filmmaking, poetry, psychology, philosophy, cognitive behaviour of society, politics, societal behaviour, travelling, exploring diverse cultures, demographies and people while staying strong with my roots.</p>
+                <p id="ui-crea-p3" class="crea-more-txt" style="display:none;">Ahan roots — to talk about, I am from Patna; yes that litti chokha wala Patna in Bihar (if you are in my city hit me up; I might be around the corner eating "dahi-sev bundiya" at the "Hanuman Mandir, Rajbhansi Nagar").</p>
+                <p id="ui-crea-p4" class="crea-more-txt" style="display:none;">Coming to my edu and the things I am trying to learn, apply and contribute to — the big 2: Data and AI. Since I am currently in my undergrad, I have not specified my niche yet and am still diversifying my portfolio to first try and then decide.</p>
                 <button id="crea-show-more-btn" class="toggle-btn" style="grid-column: 1 / -1; justify-self: start;">Show More</button>
             </div>
         </div>
@@ -424,9 +454,11 @@
         <!-- EXPERIENCE & LEADERSHIP -->
         <section>
             <div class="container">
-                <h2 class="section-title reveal-up"><span class="section-subtitle">01</span>Experience & Leadership</h2>
+                <h2 class="section-title reveal-up"><span class="section-subtitle">01</span>Experience</h2>
                 <div class="two-col-grid reveal-up" id="experience-container">
                     <!-- JS populates from Firebase -->
+                    <div class="skeleton-card skeleton"></div>
+                    <div class="skeleton-card skeleton"></div>
                 </div>
             </div>
         </section>
@@ -434,9 +466,12 @@
         <!-- ENGINEERING PROJECTS -->
         <section>
             <div class="container">
-                <h2 class="section-title reveal-up"><span class="section-subtitle">02</span>Engineering / AI</h2>
+                <h2 class="section-title reveal-up"><span class="section-subtitle">02</span>Projects</h2>
                 <div class="projects-grid reveal-up" id="projects-container">
                     <!-- JS populates from Firebase -->
+                    <div class="skeleton-card skeleton"></div>
+                    <div class="skeleton-card skeleton"></div>
+                    <div class="skeleton-card skeleton"></div>
                 </div>
             </div>
         </section>
@@ -444,13 +479,15 @@
         <!-- CORE STACK -->
         <section>
             <div class="container reveal-up">
-                <h2 class="section-title"><span class="section-subtitle">03</span>Core Stack</h2>
-                <div class="skills-container">
-                    <div class="skill-tag">Python</div><div class="skill-tag">R</div><div class="skill-tag">SQL</div>
-                    <div class="skill-tag">Scikit-learn</div><div class="skill-tag">Pandas</div><div class="skill-tag">NumPy</div>
-                    <div class="skill-tag">OpenCV</div><div class="skill-tag">TensorFlow</div><div class="skill-tag">Keras</div>
-                    <div class="skill-tag">XGBoost</div><div class="skill-tag">Machine Learning</div><div class="skill-tag">Computer Vision</div>
-                    <div class="skill-tag">NLP (RAG)</div><div class="skill-tag">Data Modeling</div>
+                <h2 class="section-title"><span class="section-subtitle">03</span>Stack</h2>
+                <div class="skills-container" id="skills-container">
+                    <!-- JS populates from Firebase -->
+                    <div class="skeleton-line skeleton" style="width:70px;"></div>
+                    <div class="skeleton-line skeleton" style="width:40px;"></div>
+                    <div class="skeleton-line skeleton" style="width:55px;"></div>
+                    <div class="skeleton-line skeleton" style="width:90px;"></div>
+                    <div class="skeleton-line skeleton" style="width:65px;"></div>
+                    <div class="skeleton-line skeleton" style="width:80px;"></div>
                 </div>
             </div>
         </section>
@@ -491,9 +528,13 @@
         <!-- PHOTOGRAPHY FEED -->
         <section>
             <div class="container">
-                <h2 class="section-title reveal-up"><span class="section-subtitle">Visuals</span>Through The Lens</h2>
+                <h2 class="section-title reveal-up"><span class="section-subtitle">Visuals</span>Channeling my Toxins</h2>
                 <div class="gallery-grid reveal-up" id="gallery-container">
                     <!-- JS populates from Firebase -->
+                    <div class="skeleton-card skeleton" style="min-height:220px;"></div>
+                    <div class="skeleton-card skeleton" style="min-height:220px;"></div>
+                    <div class="skeleton-card skeleton" style="min-height:220px;"></div>
+                    <div class="skeleton-card skeleton" style="min-height:220px;"></div>
                 </div>
                 <div class="center-btn-container reveal-up">
                     <button id="show-more-gallery-btn" class="toggle-btn" style="display: none; padding: 0.8rem 2rem; font-size: 0.8rem;">View All Frames</button>
@@ -504,15 +545,15 @@
         <!-- MUSIC -->
         <section>
             <div class="container">
-                <h2 class="section-title reveal-up"><span class="section-subtitle">Audio</span>The Soundtrack</h2>
+                <h2 class="section-title reveal-up"><span class="section-subtitle">Audio</span>The correct combination of Vibrations</h2>
                 <div class="two-col-grid reveal-up">
                     <div class="glass-card" style="padding: 1.5rem;">
                         <span class="media-meta" style="color: var(--accent); padding: 1rem 1rem 0.5rem 1rem;">Currently Playing</span>
-                        <iframe id="live-spotify-player" style="border-radius:12px; background: transparent;" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                        <iframe id="live-spotify-player" style="border-radius:12px; background: transparent;" src="about:blank" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
                     </div>
                     <div class="glass-card" style="padding: 3rem 2.5rem;">
-                        <h3 class="project-title">Curated Playlists</h3>
-                        <p class="project-desc">A collection of moods, scores, and lyrical masterpieces.</p>
+                        <h3 class="project-title">The correct combination of Vibrations</h3>
+                        <p class="project-desc">Hearing Range</p>
                         <ul class="media-list" id="playlists-container">
                             <!-- Populated from Firebase -->
                         </ul>
@@ -524,11 +565,11 @@
         <!-- POETRY & ARTICLES -->
         <section>
             <div class="container">
-                <h2 class="section-title reveal-up"><span class="section-subtitle">Literature</span>The Written Word</h2>
+                <h2 class="section-title reveal-up"><span class="section-subtitle">Literature</span>Shabd</h2>
                 <div class="two-col-grid reveal-up">
                     <div class="glass-card" style="padding: 3rem 2.5rem;">
-                        <h3 class="project-title" style="margin-bottom: 0.5rem;">Poetry & Musings</h3>
-                        <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.9rem; font-weight: 300;">From my Rekhta collection.</p>
+                        <h3 class="project-title" style="margin-bottom: 0.5rem;">The Correct Combination of Words in the Right Order</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.9rem; font-weight: 300;">Rekhta and more...</p>
                         <ul class="media-list" id="poetry-container"></ul>
                         <div class="center-btn-container">
                             <button id="show-more-poetry-btn" class="toggle-btn" style="display: none; margin-top: 1rem; padding: 0.6rem 1.5rem;">View All Poetry</button>
@@ -536,7 +577,7 @@
                     </div>
 
                     <div class="glass-card" style="padding: 3rem 2.5rem;">
-                        <h3 class="project-title" style="margin-bottom: 0.5rem;">Currently Reading</h3>
+                        <h3 class="project-title" style="margin-bottom: 0.5rem;">Reading sessions</h3>
                         <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.9rem; font-weight: 300;">Articles, Essays & Books</p>
                         <ul class="media-list" id="articles-container"></ul>
                         <div class="center-btn-container">
@@ -552,8 +593,8 @@
             <div class="container">
                 <h2 class="section-title reveal-up"><span class="section-subtitle">Motion</span>The Frame</h2>
                 <div class="glass-card reveal-up" style="padding: 3rem 2.5rem;">
-                    <h3 class="project-title">Cinema & Watchlist</h3>
-                    <p class="project-desc">Recommended video essays, cinematography breakdowns, and films.</p>
+                    <h3 class="project-title">Cinema & Recomendations</h3>
+                    <p class="project-desc">Recommendations</p>
                     <ul class="media-list" id="videos-container"></ul>
                     <div class="center-btn-container">
                         <button id="show-more-videos-btn" class="toggle-btn" style="display: none; margin-top: 1rem; padding: 0.6rem 1.5rem;">View All Watchlist</button>
@@ -565,9 +606,19 @@
         <!-- TRAVEL MAP -->
         <section>
             <div class="container reveal-up">
-                <h2 class="section-title"><span class="section-subtitle">Exploration</span>The Journey</h2>
-                <p style="color: var(--text-muted); margin-bottom: 2rem; font-weight: 300;">Places explored, and the canvas yet to be expanded.</p>
-                <div class="map-container"></div>
+                <h2 class="section-title"><span class="section-subtitle">Travel</span>Places and their stories that Shaped Me.</h2>
+                <p style="color: var(--text-muted); margin-bottom: 2rem; font-weight: 300;">stories, places that shaped me.</p>
+                <div class="map-container" style="margin-bottom: 2rem;"></div>
+                <div class="places-grid" id="places-grid">
+                    <div class="place-chip"><span class="place-dot"></span>Delhi NCR</div>
+                    <div class="place-chip"><span class="place-dot"></span>Patna, Bihar</div>
+                    <div class="place-chip"><span class="place-dot"></span>Kolkata</div>
+                    <div class="place-chip"><span class="place-dot"></span>Ranchi</div>
+                    <div class="place-chip"><span class="place-dot"></span>Lucknow</div>
+                    <div class="place-chip"><span class="place-dot"></span>Varanasi</div>
+                    <div class="place-chip"><span class="place-dot"></span>Jaipur</div>
+                    <div class="place-chip"><span class="place-dot"></span>Mumbai</div>
+                </div>
             </div>
         </section>
     </div>
@@ -586,7 +637,13 @@
             </ul>
         </div>
         <a href="mailto:shayanazmi2006@gmail.com" class="huge-contact">Say Hello.</a>
-        
+        <div class="footer-email-row">
+            <p class="footer-email-hint">shayanazmi2006@gmail.com</p>
+            <button class="copy-email-btn" id="copy-email-btn" aria-label="Copy email address" title="Copy email">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            </button>
+        </div>
+
         <span class="admin-trigger" id="admin-trigger">Admin Access</span>
     </footer>
 
