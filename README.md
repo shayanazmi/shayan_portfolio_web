@@ -1,6 +1,10 @@
-# Shayan Azmi — Cinematic Portfolio
+# Shayan Azmi —  Portfolio
 
 > A dual-mode, Firebase-powered portfolio with a built-in CMS. Switch between **Tech Mode** and **Creative Mode** for a living archive of work, thoughts, and evolution.
+
+---
+## Link to my Portfolio website 
+https://shayan-azmi.web.app
 
 ---
 
