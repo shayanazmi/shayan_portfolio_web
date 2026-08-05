@@ -9,15 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&display=swap" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="stylesheet" href="src/shared/styles/variables.css">
-    <link rel="stylesheet" href="src/shared/styles/layout.css">
-    <link rel="stylesheet" href="src/shared/ui/skeleton.css">
-    <link rel="stylesheet" href="src/shared/ui/admin-controls.css">
-    <link rel="stylesheet" href="src/features/authentication/auth.css">
-    <link rel="stylesheet" href="src/features/gallery/gallery.css">
-    <link rel="stylesheet" href="src/features/portfolio-resume/resume.css">
-    <link rel="stylesheet" href="src/features/contact/contact.css">
-    <link rel="stylesheet" href="src/features/cms-admin/cms.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
@@ -719,6 +711,36 @@
     <div id="cms-toast-container"></div>
 
     <!-- SCRIPTS -->
-    <script type="module" src="src/app.js"></script>
+    <script type="module" src="js/main.js"></script>
+    <script type="module" src="js/cms.js"></script>
+    <script>
+    setTimeout(() => {
+        const hook = document.getElementById('ui-tech-hook');
+        const hero = document.querySelector('.hero');
+        const body = document.body;
+        const info = {
+            hook: hook ? {
+                opacity: window.getComputedStyle(hook).opacity,
+                display: window.getComputedStyle(hook).display,
+                visibility: window.getComputedStyle(hook).visibility,
+                text: hook.innerText,
+                classList: Array.from(hook.classList)
+            } : null,
+            hero: hero ? {
+                opacity: window.getComputedStyle(hero).opacity,
+                display: window.getComputedStyle(hero).display,
+                height: window.getComputedStyle(hero).height
+            } : null,
+            body: {
+                classList: Array.from(body.classList)
+            }
+        };
+        fetch('/api/debug-log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(info)
+        }).catch(err => console.log('Debug fetch error:', err));
+    }, 1500);
+    </script>
 </body>
 </html>

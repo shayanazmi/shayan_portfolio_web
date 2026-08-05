@@ -1,0 +1,79 @@
+/* --- PREMIUM GLASS CARDS & PROJECTS --- */
+.projects-grid, .two-col-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; }
+.project-card, .glass-card {
+    background: linear-gradient(145deg, var(--card-bg) 0%, rgba(0,0,0,0) 100%);
+    border: 1px solid var(--card-border);
+    border-radius: 16px; padding: 3rem 2.5rem; display: flex; flex-direction: column;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    position: relative; overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+.project-card::before, .glass-card::before {
+    content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at top right, rgba(255,255,255,0.03) 0%, transparent 60%);
+    pointer-events: none;
+}
+.project-card:hover, .glass-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(255,255,255,0.15);
+    background: linear-gradient(145deg, var(--card-hover) 0%, rgba(0,0,0,0) 100%);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+}
+.project-title { font-size: 1.8rem; margin-bottom: 1rem; color: var(--text-main); line-height: 1.2; }
+.project-desc { flex-grow: 1; margin-bottom: 2.5rem; color: var(--text-muted); font-size: 0.95rem; font-weight: 300;}
+.project-link {
+    font-size: 0.8rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+    display: inline-flex; align-items: center; gap: 8px; color: var(--accent);
+}
+.project-link svg { transition: transform var(--transition-fast); }
+.project-link:hover svg { transform: translate(4px, -4px); }
+
+/* --- SHOW MORE TOGGLE --- */
+.show-more-toggle {
+    background: none; border: none; color: var(--accent); font-size: 0.75rem;
+    cursor: pointer; padding: 0; margin-top: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+    font-family: var(--font-body); display: inline-block;
+}
+.show-more-toggle:hover { text-decoration: underline; }
+
+/* --- SKILLS --- */
+.skills-container { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.skill-tag {
+    border: 1px solid var(--card-border); padding: 0.6rem 1.2rem; border-radius: 100px;
+    font-size: 0.8rem; letter-spacing: 1px; color: var(--text-muted);
+    transition: all var(--transition-fast); background: rgba(0,0,0,0.2);
+}
+.skill-tag:hover { color: var(--bg-color); background: var(--text-main); border-color: var(--text-main); }
+
+/* --- MEDIA LISTS (Education, Certifications, Poetry, Articles, Videos) --- */
+.media-list { list-style: none; }
+.media-list li { padding: 1.5rem 0; border-bottom: 1px solid var(--card-border); display: flex; flex-direction: column; transition: border-color var(--transition-fast);}
+.media-list li:hover { border-color: rgba(255,255,255,0.15); }
+.media-list li:last-child { border-bottom: none; padding-bottom: 0; }
+.media-list li.hidden-item { display: none; }
+.media-title { font-family: var(--font-display); font-size: 1.5rem; color: var(--text-main); margin-bottom: 0.2rem; }
+.media-meta { font-family: var(--font-body); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 2px; color: var(--accent); font-weight: 600; display: block;}
+
+/* --- CREATIVE MODULES (Quotes) --- */
+.quote-container {
+    text-align: center; padding: 8rem 2rem; border-bottom: 1px solid var(--card-border);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 40vh;
+}
+.dynamic-quote-text {
+    font-family: var(--font-display); font-size: clamp(2rem, 5vw, 4rem);
+    font-style: italic; color: var(--accent); line-height: 1.2; margin-bottom: 2rem;
+    max-width: 1000px;
+}
+.dynamic-quote-author { color: var(--text-main); letter-spacing: 3px; text-transform: uppercase; font-size: 0.8rem; font-weight: 600;}
+
+/* --- QUOTE FADE TRANSITION --- */
+.dynamic-quote-text,
+.dynamic-quote-author {
+    transition: opacity 0.5s ease;
+}
+.dynamic-quote-text.fading,
+.dynamic-quote-author.fading {
+    opacity: 0;
+}

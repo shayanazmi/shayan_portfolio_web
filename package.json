@@ -1,0 +1,16 @@
+{
+  "name": "shayan-portfolio-web",
+  "version": "1.0.0",
+  "description": "Dual-mode Firebase-powered portfolio website for Shayan Azmi",
+  "main": "index.html",
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "firebase:serve": "npx -y firebase-tools serve",
+    "firebase:deploy": "npx -y firebase-tools deploy"
+  },
+  "keywords": [],
+  "author": "Shayan Azmi",
+  "license": "ISC"
+}

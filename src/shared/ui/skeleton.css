@@ -1,0 +1,25 @@
+/* --- SKELETON LOADERS --- */
+@keyframes skeleton-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+.skeleton {
+    background: linear-gradient(90deg,
+        rgba(255,255,255,0.04) 25%,
+        rgba(255,255,255,0.10) 50%,
+        rgba(255,255,255,0.04) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.6s ease-in-out infinite;
+    border-radius: 8px;
+}
+.skeleton-line {
+    height: 2rem;
+    border-radius: 50px;
+    display: inline-block;
+    margin: 0.25rem;
+}
+.skeleton-card {
+    border-radius: 16px;
+    min-height: 180px;
+    border: 1px solid rgba(255,255,255,0.04);
+}

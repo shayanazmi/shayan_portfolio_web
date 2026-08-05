@@ -1,0 +1,30 @@
+:root {
+    --bg-color: #030304;
+    --text-main: #ffffff;
+    --text-muted: #888890;
+    --accent: #00e1ff;
+    --card-bg: rgba(255, 255, 255, 0.02);
+    --card-border: rgba(255, 255, 255, 0.06);
+    --card-hover: rgba(255, 255, 255, 0.04);
+    --font-display: 'Playfair Display', serif;
+    --font-body: 'Inter', sans-serif;
+    --transition-slow: 1s cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-fast: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body.creative-mode {
+    --bg-color: #050403;
+    --text-main: #fcfcfc;
+    --text-muted: #9a9085;
+    --accent: #E5A93C;
+    --card-bg: rgba(229, 169, 60, 0.015);
+    --card-border: rgba(229, 169, 60, 0.1);
+    --card-hover: rgba(229, 169, 60, 0.04);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+::selection { background: var(--accent); color: var(--bg-color); }
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-color); }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }

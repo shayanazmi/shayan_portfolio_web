@@ -11,7 +11,8 @@
       "package.json",
       "README.md",
       "firestore.rules",
-      ".git/**"
+      ".git/**",
+      "portfolio_website.html"
     ],
     "rewrites": [
       {

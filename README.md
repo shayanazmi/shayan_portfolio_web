@@ -23,21 +23,30 @@ https://shayan-azmi.web.app
 ## 🏗️ File Structure
 
 ```
-portfolio-website/
-│
-├── index.html                  # Main entry — pure HTML, no inline CSS or JS
-│
-├── css/
-│   └── style.css               # All styles: CSS variables, layout, components, CMS UI
-│
-├── js/
-│   ├── firebase-config.js      # Firebase init, auth helpers, Firestore path helpers
-│   ├── main.js                 # Canvas animations, data fetching, render functions, game, mode toggle
-│   └── cms.js                  # Admin auth, CMS sidebar, all save/delete CRUD operations
-│
-├── firebase.json               # Firebase Hosting config
-├── .firebaserc                 # Firebase project alias
-└── README.md
+shayan_portfolio_web/
+├── index.html                  # Core layout shell, links to shared css and imports src/app.js
+├── server.js                   # Local static server & Instagram proxy endpoint
+├── src/
+│   ├── app.js                  # Application bootstrap & orchestrator
+│   │
+│   ├── shared/                 # Common building blocks
+│   │   ├── firebase/
+│   │   │   └── firebase-config.js # Exports DB, Auth instances, and path helpers
+│   │   ├── styles/
+│   │   │   ├── variables.css   # Typography, theme variables, resets
+│   │   │   └── layout.css      # Header, Footer, base typography
+│   │   ├── ui/
+│   │   │   ├── skeleton.css    # Shared skeleton loader rules
+│   │   │   └── admin-controls.css # Shared input and button layouts
+│   │   └── utils/
+│   │       └── escape.js       # HTML sanitizing helper
+│   │
+│   └── features/               # Self-contained product domains (Vertical Slices)
+│       ├── authentication/     # Admin auth modal logic, listeners & styling
+│       ├── cms-admin/          # Editor forms panels, image compression & CRUD writes
+│       ├── gallery/            # Instagram sync, photo grids & lightbox
+│       ├── portfolio-resume/   # Projects, experience, timeline dynamic list renders
+│       └── contact/            # Copy email button interaction
 ```
 
 ---
@@ -76,7 +85,7 @@ cd portfolio-website
 3. Enable **Authentication → Email/Password**
 4. Go to **Project Settings → General → Your Apps** → copy the SDK config
 
-### 3. Update `js/firebase-config.js`
+### 3. Update `src/shared/firebase/firebase-config.js`
 
 Replace the `firebaseConfig` object and `appId` with your own:
 
@@ -119,17 +128,16 @@ service cloud.firestore {
 
 ### 6. Run Locally
 
-ES Modules require a local server — pick any option:
+The project ships with a Node/Express local server that also handles the Instagram proxy:
 
 ```bash
-# Option A — Firebase emulator (recommended)
+# Recommended — included Express server
+npm install
+npm run dev
+# → http://localhost:3000
+
+# Alternative — Firebase emulator
 firebase emulators:start
-
-# Option B — Python
-python -m http.server 8080
-
-# Option C — VS Code Live Server extension
-# Right-click index.html → Open with Live Server
 ```
 
 ---
@@ -145,11 +153,11 @@ Your site will be live at `https://YOUR_PROJECT_ID.web.app`
 
 ---
 
-## 🔧 JS Module Reference
+## 🔧 Module Reference
 
-### `js/firebase-config.js`
+### `src/shared/firebase/firebase-config.js`
 
-Handles all Firebase setup and exports helpers used across the app.
+Handles all Firebase setup and exports helpers used across every feature slice.
 
 | Export | Type | Description |
 |---|---|---|
@@ -161,20 +169,26 @@ Handles all Firebase setup and exports helpers used across the app.
 | `dataPath(collName)` | `fn` | Returns Firestore `CollectionReference` for a named collection |
 | `docPath(...segments)` | `fn` | Returns Firestore `DocumentReference` for a nested path |
 
-### `js/main.js`
+### `src/app.js`
 
+- Application bootstrap and orchestrator
 - Scroll reveal animations (IntersectionObserver)
 - Tech canvas (falling particles) + Creative canvas (entropy field)
-- Firebase data fetch & render for all sections
 - Alter Ego mode toggle
 - Cyber Dino game
+- Calls each feature's `init*()` gatekeeper
 
-### `js/cms.js`
+### Feature Slices (`src/features/*`)
 
-- Admin login/logout flow
-- CMS sidebar navigation
-- Save handlers for all content types (Projects, Experience, Gallery, Poetry, etc.)
-- Delete (manage) panel
+Each slice is a self-contained directory with its own `index.js` gatekeeper:
+
+| Feature | Gatekeeper Export | Responsibility |
+|---|---|---|
+| `authentication/` | `checkAuthState()` | Firebase auth listeners, login overlay |
+| `gallery/` | `initGallery()` | Photo grid, lightbox, Behold/Instagram sync |
+| `portfolio-resume/` | `initResumeSection()` | All Firestore data fetches and dynamic renders |
+| `contact/` | `initContactForm()` | Copy-email button handler |
+| `cms-admin/` | `initCMSDashboard()` | CMS sidebar, form saves, CRUD, image upload |
 
 ---
 
@@ -189,11 +203,12 @@ Handles all Firebase setup and exports helpers used across the app.
 **Directly in code**
 | What | Where |
 |---|---|
-| Default content arrays | `js/main.js` — `defaultProjects`, `defaultExperience`, etc. |
+| Default content fallbacks | `src/features/portfolio-resume/resume-data.js` — `defaultProjects`, etc. |
 | Skills list | `index.html` — `.skills-container` section |
 | Footer links | `index.html` — `<footer>` |
-| Colors & fonts | `css/style.css` — `:root` variables |
+| Colors & fonts | `src/shared/styles/variables.css` — `:root` variables |
 | Mode names & nav | `index.html` — `.nav-logo`, toggle button |
+| Firebase config | `src/shared/firebase/firebase-config.js` |
 
 ---
 

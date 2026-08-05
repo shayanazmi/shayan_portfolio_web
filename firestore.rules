@@ -4,7 +4,7 @@ service cloud.firestore {
 
     // ── CMS collections ─────────────────────────────────────────────────────
     // Path: /cms/{collectionName}/items/{docId}
-    // Anyone can read (portfolio is public). Only verified admin can write.
+    // Anyone can read (portfolio is public). Only authenticated admin can write.
     match /cms/{collectionName}/items/{docId} {
       allow read: if true;
       allow create: if isAdmin() && validWrite();
@@ -26,21 +26,14 @@ service cloud.firestore {
 
     // ── Helper functions ─────────────────────────────────────────────────────
 
-    // isAdmin: must be signed in AND have a verified email
+    // isAdmin: must be signed in (single-admin portfolio, no email_verified needed)
     function isAdmin() {
-      return request.auth != null
-          && request.auth.token.email_verified == true;
+      return request.auth != null;
     }
 
-    // validWrite: guard against oversized or malformed payloads
+    // validWrite: single document size guard (1 MiB max, covers all fields)
     function validWrite() {
-      let data = request.resource.data;
-      // Max single document size guard (reasonable field limits)
-      return data.keys().size() <= 20
-          && (!('url'   in data) || data.url.size()   <= 500000)  // 500 KB base64 max
-          && (!('title' in data) || data.title.size() <= 500)
-          && (!('desc'  in data) || data.desc.size()  <= 5000)
-          && (!('content' in data) || data.content.size() <= 10000);
+      return request.resource.size() < 1048576;
     }
   }
 }

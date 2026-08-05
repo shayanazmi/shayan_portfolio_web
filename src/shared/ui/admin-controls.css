@@ -1,0 +1,62 @@
+.admin-input, .admin-textarea, .admin-select {
+    width: 100%; padding: 0.85rem 1rem;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #fff; border-radius: 10px;
+    font-family: var(--font-body); font-size: 0.9rem;
+    transition: border-color 0.2s, background 0.2s; margin-bottom: 0;
+}
+.admin-input:focus, .admin-textarea:focus, .admin-select:focus { outline: none; border-color: var(--accent); background: rgba(255,255,255,0.05); }
+.admin-input::placeholder, .admin-textarea::placeholder { color: rgba(255,255,255,0.2); }
+.admin-textarea { resize: vertical; min-height: 90px; }
+.admin-select option { background: #0a0a0d; }
+
+.admin-btn {
+    width: 100%; padding: 0.95rem; background: var(--accent);
+    color: #000; border: none; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1.5px; font-size: 0.8rem;
+    cursor: pointer; border-radius: 10px; margin-top: 0.5rem;
+    transition: filter 0.2s, transform 0.15s; font-family: var(--font-body);
+}
+.admin-btn:hover { filter: brightness(1.15); transform: translateY(-1px); }
+.admin-btn:active { transform: translateY(0); }
+.admin-btn-secondary { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.1); }
+.admin-btn-secondary:hover { background: rgba(255,255,255,0.1); filter: none; }
+.admin-btn-delete {
+    background: rgba(255,50,50,0.1); color: #ff6060;
+    padding: 0.45rem 0.9rem; border: 1px solid rgba(255,50,50,0.3);
+    border-radius: 6px; cursor: pointer; font-size: 0.72rem;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+    transition: all 0.2s; font-family: var(--font-body);
+}
+.admin-btn-delete:hover { background: rgba(255,50,50,0.25); }
+
+.admin-btn-delete {
+    transition: all 0.3s ease;
+}
+.admin-btn-delete.confirming {
+    background: rgba(255,51,51,0.15) !important;
+    border-color: #ff3333 !important;
+    color: #ff3333 !important;
+    animation: pulse-delete 0.6s ease;
+}
+@keyframes pulse-delete {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.close-admin {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 2.5rem;
+    cursor: pointer;
+    transition: color var(--transition-fast);
+    z-index: 10001;
+}
+.close-admin:hover {
+    color: var(--text-main);
+}
