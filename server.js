@@ -36,6 +36,23 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    // Behold.so CORS proxy endpoint
+    if (pathname === '/api/behold') {
+        const feedUrl = parsedUrl.searchParams.get('url') || 'https://feed.behold.so/Q7Oy7QUwbHR7adJiYRYaHHqg9Q63';
+        https.get(feedUrl, (bRes) => {
+            let body = '';
+            bRes.on('data', chunk => body += chunk);
+            bRes.on('end', () => {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(body);
+            });
+        }).on('error', (err) => {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: err.message }));
+        });
+        return;
+    }
+
     // Instagram CORS proxy endpoint
     if (pathname === '/api/ig') {
         const username = parsedUrl.searchParams.get('username') || 'shayan.azmi';

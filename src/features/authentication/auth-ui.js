@@ -20,12 +20,8 @@ export function setupAuthUI(user) {
         logoutBtn.style.display = user ? 'inline-flex' : 'none';
     }
 
-    if (adminPanel) {
-        if (user) {
-            adminPanel.style.display = 'flex';
-        } else {
-            adminPanel.style.display = 'none';
-        }
+    if (!user && adminPanel) {
+        adminPanel.style.display = 'none';
     }
 }
 
@@ -44,10 +40,18 @@ export function initAuthListeners(onLoginSuccess) {
     const togglePass = document.getElementById('toggle-pass-vis');
     const adminPanel = document.getElementById('admin-panel');
 
+    // 🔒 Admin Access click ALWAYS requires Passcode Modal authentication!
     if (trigger) {
-        trigger.addEventListener('click', () => {
+        trigger.addEventListener('click', (e) => {
+            e.preventDefault();
             if (modal) {
                 modal.style.display = 'flex';
+                if (emailInput) emailInput.value = '';
+                if (passInput) {
+                    passInput.value = '';
+                    passInput.type = 'password';
+                }
+                if (togglePass) togglePass.textContent = 'Show';
                 if (passError) passError.style.display = 'none';
             }
         });
@@ -104,7 +108,7 @@ export function initAuthListeners(onLoginSuccess) {
             if (err.code === 'auth/invalid-email') msg = 'Invalid email format.';
             else if (err.code === 'auth/user-not-found') msg = 'No user account found for this email. Click "Register Account" below to create it.';
             else if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-                msg = 'Wrong email or password. If you forgot your password, click "Forgot Password?" below.';
+                msg = 'Wrong email or password.';
             }
             else if (err.code === 'auth/too-many-requests') msg = 'Too many failed attempts. Try again later.';
             else if (err.code === 'auth/network-request-failed') msg = 'Network error. Check connection.';
@@ -129,7 +133,6 @@ export function initAuthListeners(onLoginSuccess) {
         });
     }
 
-    // Register Account handler
     if (registerBtn) {
         registerBtn.addEventListener('click', async (e) => {
             e.preventDefault();
@@ -153,7 +156,6 @@ export function initAuthListeners(onLoginSuccess) {
         });
     }
 
-    // Reset Password handler
     if (resetBtn) {
         resetBtn.addEventListener('click', async (e) => {
             e.preventDefault();

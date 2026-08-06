@@ -4,6 +4,7 @@ import {
 import { compressImage, toSpotifyEmbed } from './image-upload.js';
 import { showToast } from './toast.js';
 import { escapeHtml } from '../../shared/utils/escape.js';
+import { fetchBeholdFeed, DEFAULT_BEHOLD_URL } from '../gallery/gallery-api.js';
 
 export function switchGalleryTab(mode) {
     const fileTab = document.getElementById('gallery-tab-file');
@@ -118,6 +119,38 @@ export function initCMSListeners() {
         });
     }
 
+    // ⚡ 1-Click Sync Instagram Feed button
+    document.getElementById('sync-instagram-btn')?.addEventListener('click', async () => {
+        const customUrl = document.getElementById('admin-behold-url')?.value.trim();
+        const targetUrl = customUrl || DEFAULT_BEHOLD_URL;
+        showToast('Syncing latest 6 Instagram posts from Behold.so...');
+
+        try {
+            const posts = await fetchBeholdFeed(targetUrl);
+            if (!posts.length) {
+                throw new Error('No posts returned from Behold.so feed.');
+            }
+
+            for (let i = 0; i < posts.length; i++) {
+                const p = posts[i];
+                await saveItem('gallery', {
+                    priority: i + 1,
+                    title: p.title,
+                    url: p.url,
+                    link: p.link
+                });
+            }
+
+            if (customUrl) {
+                saveUiDoc('behold', { url: customUrl });
+            }
+
+            showToast(`Synced ${posts.length} latest Instagram posts!`);
+        } catch (err) {
+            showToast(`Instagram Sync Failed: ${err.message}`, 'error');
+        }
+    });
+
     // Projects Save
     document.getElementById('save-proj-btn')?.addEventListener('click', () => {
         const title = document.getElementById('admin-proj-title')?.value.trim();
@@ -187,7 +220,7 @@ export function initCMSListeners() {
     });
 
     // Gallery Save
-    document.getElementById('save-img-btn')?.addEventListener('click', () => {
+    document.getElementById('save-photo-btn')?.addEventListener('click', () => {
         const title = document.getElementById('admin-img-title')?.value.trim();
         const link = document.getElementById('admin-img-link')?.value.trim();
         const urlInput = document.getElementById('admin-img-url')?.value.trim();
@@ -283,28 +316,5 @@ export function initCMSListeners() {
         const url = document.getElementById('admin-behold-url')?.value.trim();
         if (!url) return;
         saveUiDoc('behold', { url });
-    });
-
-    // 1-Click Instagram Profile Import
-    document.getElementById('auto-fetch-ig-profile-btn')?.addEventListener('click', async () => {
-        const username = document.getElementById('admin-ig-username')?.value.trim() || 'shayan.azmi';
-        showToast(`Fetching posts for @${username}...`);
-        try {
-            const res = await fetch(`/api/ig?username=${encodeURIComponent(username)}`);
-            const data = await res.json();
-            if (!data.success || !Array.isArray(data.posts)) {
-                throw new Error(data.error || 'Failed to fetch Instagram posts');
-            }
-            showToast(`Imported ${data.posts.length} posts from Instagram!`);
-            for (const post of data.posts) {
-                await saveItem('gallery', {
-                    title: post.caption || `Instagram Post`,
-                    url: post.displayUrl,
-                    link: `https://instagram.com/p/${post.shortcode}`
-                });
-            }
-        } catch (err) {
-            showToast(`IG Fetch Failed: ${err.message}`, 'error');
-        }
     });
 }
