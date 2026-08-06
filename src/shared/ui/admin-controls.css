@@ -1,0 +1,53 @@
+/* Admin Controls & CMS Styles */
+.admin-item-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    transition: background 0.2s ease;
+}
+
+.admin-item-card:hover {
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.admin-item-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.admin-btn-icon {
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: #e5e7eb;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.admin-btn-icon:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.admin-btn-delete {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+}
+
+.admin-btn-delete.confirming {
+    background: rgba(239, 68, 68, 0.9);
+    color: #ffffff;
+    animation: pulse 0.5s infinite alternate;
+}
+
+@keyframes pulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.05); }
+}
