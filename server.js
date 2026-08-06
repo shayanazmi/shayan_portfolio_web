@@ -38,7 +38,7 @@ const server = http.createServer((req, res) => {
 
     // Behold.so CORS proxy endpoint
     if (pathname === '/api/behold') {
-        const feedUrl = parsedUrl.searchParams.get('url') || 'https://feed.behold.so/Q7Oy7QUwbHR7adJiYRYaHHqg9Q63';
+        const feedUrl = parsedUrl.searchParams.get('url') || 'https://feeds.behold.so/LjnCeNbAX8rX7T8X7acZ';
         https.get(feedUrl, (bRes) => {
             let body = '';
             bRes.on('data', chunk => body += chunk);
