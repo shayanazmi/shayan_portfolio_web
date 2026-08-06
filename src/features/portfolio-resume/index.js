@@ -1,5 +1,5 @@
 import {
-    syncCollection, syncQuotes, syncSpotifyPlayer,
+    syncCollection, syncQuotes, syncSpotifyPlayer, syncIntroductions,
     defaultProjects, defaultExperience, defaultEducation,
     defaultCertifications, defaultSkills
 } from './resume-data.js';
@@ -26,6 +26,7 @@ export function initResumeSection() {
 
         syncQuotes(renderQuotes);
         syncSpotifyPlayer();
+        syncIntroductions();
 
         DebugLogger.trackInit('Resume', 'OK');
     } catch (err) {

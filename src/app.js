@@ -38,10 +38,14 @@ function initAlterEgoToggle() {
             if (techContent) techContent.style.opacity = '0';
             if (techHero)    techHero.style.opacity    = '0';
             if (bgTech)      bgTech.style.opacity      = '0';
+            if (window._pauseTechCanvas) window._pauseTechCanvas();
+            if (window._resumeEntropyCanvas) window._resumeEntropyCanvas();
         } else {
             if (creaContent) creaContent.style.opacity = '0';
             if (creaHero)    creaHero.style.opacity    = '0';
             if (bgCreative)  bgCreative.style.opacity  = '0';
+            if (window._pauseEntropyCanvas) window._pauseEntropyCanvas();
+            if (window._resumeTechCanvas) window._resumeTechCanvas();
         }
 
         setTimeout(() => {
@@ -89,6 +93,7 @@ function initTechCanvas() {
     if (!ctx) return;
     let width, height, particles = [];
     let animFrameId = null;
+    let isRunning = true;
 
     function resize() {
         if (!canvas.parentElement) return;
@@ -108,10 +113,11 @@ function initTechCanvas() {
             radius: Math.random() * 2 + 1.5,
             speed: Math.random() * 1.5 + 0.5
         }));
-        animate();
+        if (isRunning) animate();
     }
 
     function animate() {
+        if (!isRunning) return;
         ctx.clearRect(0, 0, width, height);
         ctx.fillStyle = '#00e1ff';
         particles.forEach((p) => {
@@ -123,6 +129,17 @@ function initTechCanvas() {
         });
         animFrameId = requestAnimationFrame(animate);
     }
+
+    window._pauseTechCanvas = () => {
+        isRunning = false;
+        if (animFrameId) cancelAnimationFrame(animFrameId);
+    };
+    window._resumeTechCanvas = () => {
+        if (!isRunning) {
+            isRunning = true;
+            animate();
+        }
+    };
 
     window.addEventListener('resize', resize);
     resize();
@@ -137,6 +154,8 @@ function initEntropyCanvas() {
     const SIZE = 400;
     const COL = '#ffffff';
     let time = 0, particles = [];
+    let animFrameId = null;
+    let isRunning = false; // Starts paused if not in creative mode
 
     const dpr = window.devicePixelRatio || 1;
     canvas.width = SIZE * dpr;
@@ -203,6 +222,7 @@ function initEntropyCanvas() {
     }
 
     function animate() {
+        if (!isRunning) return;
         ctx.clearRect(0, 0, SIZE, SIZE);
         if (time % 30 === 0) updateNeighbors();
         particles.forEach((p) => {
@@ -219,9 +239,19 @@ function initEntropyCanvas() {
         ctx.lineWidth = 0.5;
         ctx.beginPath(); ctx.moveTo(SIZE / 2, 0); ctx.lineTo(SIZE / 2, SIZE); ctx.stroke();
         time++;
-        requestAnimationFrame(animate);
+        animFrameId = requestAnimationFrame(animate);
     }
-    animate();
+
+    window._pauseEntropyCanvas = () => {
+        isRunning = false;
+        if (animFrameId) cancelAnimationFrame(animFrameId);
+    };
+    window._resumeEntropyCanvas = () => {
+        if (!isRunning) {
+            isRunning = true;
+            animate();
+        }
+    };
 }
 
 // ─── Cyber Dino Runner Game (Authentic Character Drawing) ────────────────────

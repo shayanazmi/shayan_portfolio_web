@@ -67,7 +67,9 @@ export function syncCollection(collName, defaults, onUpdate) {
             window._cmsRenderCategoryList(collName);
         }
 
-        onUpdate(items.length ? items : defaults);
+        // If Firestore snap is empty (collection deliberately emptied by admin), pass empty array.
+        // Fallback to defaults only if snap was never initialized or on error.
+        onUpdate(items);
     }, (err) => {
         DebugLogger.recordError('Firestore Sync Error', `Collection [${collName}] sync failed: ${err.message}`);
         onUpdate(defaults);
@@ -116,6 +118,39 @@ export function syncSpotifyPlayer() {
             const url = snap.data().embedUrl;
             localStorage.setItem('spotify_embed_url', url);
             if (iframe) iframe.src = url;
+        }
+    }, () => {});
+}
+
+export function syncIntroductions() {
+    onSnapshot(uiDocPath('introductions'), (snap) => {
+        if (!snap.exists()) return;
+        const data = snap.data();
+
+        if (data.techHook) {
+            const techHookEl = document.getElementById('ui-tech-hook');
+            if (techHookEl) techHookEl.innerHTML = data.techHook.replace(/\n/g, '<br>');
+        }
+        if (data.techBody) {
+            const techIntroEl = document.querySelector('#tech-hero-section .hero-intro');
+            if (techIntroEl) {
+                const paragraphs = data.techBody.split(/\n\s*\n/).filter(Boolean);
+                techIntroEl.innerHTML = paragraphs.map((p, idx) => `<p id="ui-tech-p${idx + 1}">${p.trim()}</p>`).join('');
+            }
+        }
+
+        if (data.creaHook) {
+            const creaHookEl = document.getElementById('ui-crea-hook');
+            if (creaHookEl) creaHookEl.innerHTML = data.creaHook.replace(/\n/g, '<br>');
+        }
+        if (data.creaBody) {
+            const creaIntroEl = document.querySelector('#creative-hero-section .hero-intro');
+            if (creaIntroEl) {
+                const paragraphs = data.creaBody.split(/\n\s*\n/).filter(Boolean);
+                let html = paragraphs.map((p, idx) => `<p id="ui-crea-p${idx + 1}">${p.trim()}</p>`).join('');
+                html += `<button id="crea-show-more-btn" class="toggle-btn" style="grid-column: 1 / -1; justify-self: start;">Show More</button>`;
+                creaIntroEl.innerHTML = html;
+            }
         }
     }, () => {});
 }

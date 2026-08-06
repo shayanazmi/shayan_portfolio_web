@@ -317,4 +317,19 @@ export function initCMSListeners() {
         if (!url) return;
         saveUiDoc('behold', { url });
     });
+
+    // Hero Introductions Save
+    document.getElementById('save-ui-btn')?.addEventListener('click', () => {
+        const techHook = document.getElementById('admin-tech-hook')?.value.trim();
+        const techBody = document.getElementById('admin-tech-body')?.value.trim();
+        const creaHook = document.getElementById('admin-crea-hook')?.value.trim();
+        const creaBody = document.getElementById('admin-crea-body')?.value.trim();
+
+        saveUiDoc('introductions', {
+            techHook,
+            techBody,
+            creaHook,
+            creaBody
+        });
+    });
 }

@@ -12,19 +12,31 @@ export function renderGallery(items) {
 
     const visibleItems = galleryExpanded ? currentGalleryItems : currentGalleryItems.slice(0, GALLERY_LIMIT);
 
+    container.setAttribute('data-count', visibleItems.length);
+
     container.innerHTML = visibleItems.map((item) => {
         const escapedTitle = escapeHtml(item.title || 'Photo');
         const escapedUrl = escapeHtml(item.url || '');
         const escapedLink = escapeHtml(item.link || '');
+        const targetMediaUrl = escapedUrl || escapedLink;
 
-        const clickAction = escapedLink
-            ? `window.open('${escapedLink.replace(/'/g, "\\'")}', '_blank', 'noopener')`
-            : `openLightbox('${escapedUrl.replace(/'/g, "\\'")}')`;
+        const isYoutube = /youtube\.com|youtu\.be/i.test(targetMediaUrl);
+        const isSpotify = /spotify\.com/i.test(targetMediaUrl);
+
+        let clickAction;
+        if (escapedLink && !isYoutube && !isSpotify) {
+            clickAction = `window.open('${escapedLink.replace(/'/g, "\\'")}', '_blank', 'noopener')`;
+        } else {
+            clickAction = `openLightbox('${targetMediaUrl.replace(/'/g, "\\'")}')`;
+        }
 
         return `
-            <div class="gallery-item" onclick="${clickAction}" role="button" tabindex="0" aria-label="View ${escapedTitle} full screen">
-                <img src="${escapedUrl}" alt="${escapedTitle}" loading="lazy" />
-                <div class="ig-overlay">${escapedTitle}</div>
+            <div class="gallery-item" onclick="${clickAction}" role="button" tabindex="0" aria-label="View ${escapedTitle}">
+                <img src="${escapedUrl}" alt="${escapedTitle}" loading="lazy" onError="this.onerror=null;this.src='favicon.svg';" />
+                <div class="ig-overlay">
+                    <span>${escapedTitle}</span>
+                    ${isYoutube ? '<span class="media-type-badge">▶ Video</span>' : ''}
+                </div>
             </div>
         `;
     }).join('');
@@ -39,29 +51,54 @@ export function renderGallery(items) {
     }
 }
 
+function extractYouTubeId(url) {
+    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+    return match ? match[1] : null;
+}
+
 export function openLightbox(src) {
     if (!src) return;
     let overlay = document.getElementById('photo-lightbox');
     if (!overlay) {
         overlay = document.createElement('div');
         overlay.id = 'photo-lightbox';
-        overlay.style.cssText = 'position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;cursor:zoom-out;opacity:0;transition:opacity 0.3s ease;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);';
-        overlay.innerHTML = `<img style="max-width:92vw;max-height:92vh;object-fit:contain;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,0.8);" alt="Fullscreen photo">`;
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;cursor:zoom-out;opacity:0;transition:opacity 0.3s ease;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:1rem;';
         document.body.appendChild(overlay);
 
         const closeFn = () => {
             overlay.style.opacity = '0';
-            setTimeout(() => overlay.style.display = 'none', 300);
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                overlay.innerHTML = '';
+            }, 300);
         };
 
-        overlay.addEventListener('click', closeFn);
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay || e.target.tagName === 'IMG') closeFn();
+        });
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && overlay.style.display === 'flex') closeFn();
         });
     }
 
-    const img = overlay.querySelector('img');
-    if (img) img.src = src;
+    const ytId = extractYouTubeId(src);
+    if (ytId) {
+        overlay.innerHTML = `
+            <div style="position:relative;width:90vw;max-width:900px;aspect-ratio:16/9;box-shadow:0 20px 60px rgba(0,0,0,0.9);border-radius:12px;overflow:hidden;background:#000;">
+                <iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1" style="width:100%;height:100%;border:none;" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+            </div>
+        `;
+    } else if (/spotify\.com/i.test(src)) {
+        const spotifyEmbed = src.replace('open.spotify.com/', 'open.spotify.com/embed/');
+        overlay.innerHTML = `
+            <div style="position:relative;width:90vw;max-width:600px;height:380px;box-shadow:0 20px 60px rgba(0,0,0,0.9);border-radius:12px;overflow:hidden;background:#000;">
+                <iframe src="${spotifyEmbed}" style="width:100%;height:100%;border:none;" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+            </div>
+        `;
+    } else {
+        overlay.innerHTML = `<img src="${escapeHtml(src)}" style="max-width:92vw;max-height:92vh;object-fit:contain;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,0.8);" alt="Fullscreen photo">`;
+    }
+
     overlay.style.display = 'flex';
 
     requestAnimationFrame(() => {
